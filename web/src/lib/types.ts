@@ -1,0 +1,197 @@
+// Firestore document shapes. Keep in sync with docs/IMPLEMENTATION_PLAN.md §6.
+import type { Timestamp } from 'firebase/firestore'
+
+export type WithId<T> = T & { id: string }
+
+export interface LatLng {
+  lat: number
+  lng: number
+}
+
+export type TripStatus =
+  | 'gathering'
+  | 'extracting'
+  | 'voting'
+  | 'planning'
+  | 'planned'
+  | 'splitting'
+  | 'settling'
+  | 'settled'
+
+export interface Trip {
+  name: string
+  startDate: string
+  endDate: string
+  origin: string
+  destination: { name: string } & LatLng
+  hostUid: string
+  memberUids: string[]
+  inviteCode: string
+  status: TripStatus
+  votingDeadline: Timestamp | null
+  split: { version: number }
+  pipeline?: {
+    stage: string
+    done: number
+    total: number
+    dropped: { name: string; reason: string }[]
+    error?: string
+    usedFallback?: boolean
+  }
+  isDemo: boolean
+  createdAt: Timestamp
+}
+
+export type Vote = 'must' | 'maybe' | 'skip'
+
+export interface Preferences {
+  budgetIdr: number
+  interests: string[]
+  dietary: string[]
+  skip: string[]
+}
+
+export interface Member {
+  displayName: string
+  photoURL: string
+  role: 'host' | 'member'
+  isBot: boolean
+  prefs: Preferences
+  prefsDone: boolean
+  votes: Record<string, Vote>
+  votesSubmittedAt: Timestamp | null
+  splitApprovedVersion: number | null
+}
+
+export interface Reel {
+  uploaderUid: string
+  source: 'upload' | 'link'
+  storagePath?: string
+  sourceUrl?: string
+  platform: 'instagram' | 'tiktok' | 'youtube' | 'other'
+  status: 'queued' | 'processing' | 'done' | 'failed' | 'link_only'
+  contentHash?: string
+  placesFound?: number
+  error?: string
+}
+
+export interface MapsSource {
+  title: string
+  uri: string
+  placeId?: string
+}
+
+export interface Place {
+  name: string
+  category: string
+  address: string
+  location: LatLng
+  googleMapsUri: string
+  rating?: number
+  userRatingCount?: number
+  priceLevel?: string
+  openingHours?: unknown
+  photoName?: string
+  mentions: { reelId: string; atSec: number; evidence: string }[]
+  savedBy: string[]
+  summary: {
+    highlights: string[]
+    bestTime: string
+    priceNote: string
+    dietaryNote: string
+    crowdNote: string
+  }
+  mapsSources: MapsSource[]
+  tally: Record<Vote, number>
+}
+
+export interface Stop {
+  placeId: string
+  start: string
+  end: string
+  attendees: string[]
+  estCostPerPersonIdr: number
+  note: string
+}
+
+export interface ItineraryDay {
+  date: string
+  title: string
+  stops: Stop[]
+}
+
+export interface Plan {
+  whyThisPlan: string
+  compromises: { uid: string; gaveUp: string; got: string; reason: string }[]
+  estimates: { uid: string; amountIdr: number }[]
+  warnings: string[]
+  stay?: { sku: string; reason: string }
+  model: string
+  attempts: number
+  generatedAt: Timestamp
+}
+
+export interface Expense {
+  title: string
+  amountIdr: number
+  paidBy: string
+  split: {
+    mode: 'equal' | 'shares' | 'exact' | 'items'
+    participants: string[]
+    shares?: Record<string, number>
+    exact?: Record<string, number>
+  }
+  items?: { name: string; unitPriceIdr: number; qty: number; portions: Record<string, number> }[]
+  taxIdr?: number
+  serviceIdr?: number
+  discountIdr?: number
+  computedShares: Record<string, number>
+  receiptPath?: string
+  source: 'manual' | 'receipt' | 'booking'
+  createdBy: string
+  updatedAt: Timestamp
+}
+
+export type TransferStatus = 'unpaid' | 'waiting' | 'confirmed'
+
+export interface Transfer {
+  from: string
+  to: string
+  amountIdr: number
+  status: TransferStatus
+  splitVersion: number
+  sentAt?: Timestamp
+  confirmedAt?: Timestamp
+}
+
+export interface Booking {
+  sku: string
+  title: string
+  amountIdr: number
+  payerUid: string
+  cartHash: string
+  approvals: Record<string, { at: Timestamp; cartHash: string }>
+  status: 'proposed' | 'approving' | 'paid' | 'failed'
+  failureReason?: string
+}
+
+export type NotificationType =
+  | 'joined'
+  | 'voting_deadline'
+  | 'plan_ready'
+  | 'split_reopened'
+  | 'approval_needed'
+  | 'bill'
+  | 'payment_sent'
+  | 'payment_confirmed'
+  | 'booking_proposed'
+  | 'booking_paid'
+
+export interface AppNotification {
+  type: NotificationType
+  text: string
+  tripId: string
+  link: string
+  read: boolean
+  createdAt: Timestamp
+}

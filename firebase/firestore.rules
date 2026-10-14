@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// Clients read trip data through listeners. Anything that touches membership,
+// AI output, money, approvals, or bookings is written by travelin-api with the
+// Admin SDK, which bypasses these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMember(tripId) {
+      return signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.memberUids;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    match /trips/{tripId} {
+      allow read: if isMember(tripId);
+      allow write: if false;
+
+      match /members/{uid} {
+        allow read: if isMember(tripId);
+        // Own preferences any time; own votes only until they are submitted.
+        allow update: if signedIn() && request.auth.uid == uid
+          && changedKeys().hasOnly(['prefs', 'prefsDone', 'votes'])
+          && (resource.data.get('votesSubmittedAt', null) == null
+              || !changedKeys().hasAny(['votes']));
+      }
+
+      match /reels/{reelId} {
+        allow read: if isMember(tripId);
+        allow create: if isMember(tripId)
+          && request.resource.data.uploaderUid == request.auth.uid
+          && request.resource.data.status in ['queued', 'link_only'];
+      }
+
+      // places, itinerary, plan, expenses, transfers, bookings
+      match /{collection}/{docId} {
+        allow read: if isMember(tripId);
+        allow write: if false;
+      }
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+
+      match /notifications/{notificationId} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow update: if signedIn() && request.auth.uid == uid
+          && changedKeys().hasOnly(['read']);
+      }
+    }
+
+    match /cache/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

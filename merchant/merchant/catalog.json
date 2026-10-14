@@ -1,0 +1,46 @@
+{
+  "merchant_id": "travelin-demo-merchant",
+  "merchant_name": "Travelin Demo Merchant",
+  "items": [
+    {
+      "sku": "yog-stay-courtyard",
+      "type": "stay",
+      "destination": "Yogyakarta",
+      "title": "Courtyard Homestay (demo)",
+      "description": "Joglo-style homestay with a shared courtyard, 3 bedrooms, breakfast included. Walking distance to the city centre.",
+      "price_idr": 850000,
+      "unit": "night",
+      "capacity": 6
+    },
+    {
+      "sku": "yog-stay-ricefield",
+      "type": "stay",
+      "destination": "Yogyakarta",
+      "title": "Rice Field Villa (demo)",
+      "description": "Quiet villa on the northern edge of the city with a small pool, 4 bedrooms, kitchen.",
+      "price_idr": 1450000,
+      "unit": "night",
+      "capacity": 8
+    },
+    {
+      "sku": "yog-tour-merapi-jeep",
+      "type": "tour",
+      "destination": "Yogyakarta",
+      "title": "Merapi Sunrise Jeep Tour (demo)",
+      "description": "Early-morning jeep ride on the slopes of Mount Merapi with hotel pickup.",
+      "price_idr": 450000,
+      "unit": "person",
+      "capacity": 8
+    },
+    {
+      "sku": "yog-tour-batik-class",
+      "type": "tour",
+      "destination": "Yogyakarta",
+      "title": "Batik Workshop (demo)",
+      "description": "Two-hour hands-on batik class; you keep the piece you make.",
+      "price_idr": 175000,
+      "unit": "person",
+      "capacity": 10
+    }
+  ]
+}

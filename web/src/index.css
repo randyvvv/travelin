@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #1b1b1f;
+  --color-muted: #5e5e66;
+  --color-paper: #fbf7f2;
+  --color-card: #ffffff;
+  --color-line: #e7e1d8;
+  --color-lagoon: #0e7c74;
+  --color-lagoon-dark: #0a5e58;
+  --color-sunset: #f2994a;
+}
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+}

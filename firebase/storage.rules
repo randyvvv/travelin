@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Membership is checked against Firestore (cross-service rules). The first
+// deploy asks to grant Storage access to Firestore; accept it.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isMember(tripId) {
+      return request.auth != null
+        && request.auth.uid in firestore.get(/databases/(default)/documents/trips/$(tripId)).data.memberUids;
+    }
+
+    match /trips/{tripId}/reels/{uid}/{fileName} {
+      allow read: if isMember(tripId);
+      allow create: if isMember(tripId) && request.auth.uid == uid
+        && request.resource.contentType.matches('video/.*')
+        && request.resource.size < 100 * 1024 * 1024;
+    }
+
+    match /trips/{tripId}/receipts/{uid}/{fileName} {
+      allow read: if isMember(tripId);
+      allow create: if isMember(tripId) && request.auth.uid == uid
+        && request.resource.contentType.matches('image/.*')
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Demo media is managed by the server only.
+    match /samples/{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

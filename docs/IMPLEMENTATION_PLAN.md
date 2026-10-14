@@ -712,4 +712,4 @@ gcloud run deploy travelin-merchant --source merchant --region asia-southeast2 \
 - [ ] PWA manifest, `<title>`, icons, splash
 - [ ] All UI copy, notifications, emails
 - [ ] README, deck, video, submission form
-- [ ] Before submitting: `git grep -i kumpul` returns nothing
+- [ ] Before submitting: `git grep -i kumpul -- ':!docs/'` returns nothing

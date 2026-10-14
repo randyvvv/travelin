@@ -1,0 +1,33 @@
+[project]
+name = "travelin-merchant"
+version = "0.1.0"
+description = "Mock merchant for Travelin group bookings: catalog, AP2 carts, mock payment processor"
+requires-python = ">=3.12"
+dependencies = [
+    "ap2",
+    "fastapi>=0.143.1",
+    "pydantic-settings>=2.16.0",
+    "pyjwt[crypto]>=2.15.1",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    # ap2 pins pytest==9.0.2 as a runtime dependency, so keep this range loose.
+    "pytest>=9.0",
+    "ruff>=0.17.0",
+]
+
+[tool.uv.sources]
+ap2 = { git = "https://github.com/google-agentic-commerce/AP2.git", branch = "main" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

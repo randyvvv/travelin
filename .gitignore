@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.venv/
+
+# Build output and caches
+web/dist/
+web/dev-dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Env files and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*service-account*.json
+
+# Firebase
+.firebase/
+*-debug.log
+
+# Sample media lives in Cloud Storage, not in git
+samples/reels/*
+samples/receipts/*
+!samples/reels/.gitkeep
+!samples/receipts/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
