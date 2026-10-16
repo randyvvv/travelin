@@ -330,6 +330,8 @@ Implemented as an ADK 2.0 dynamic workflow: `@node(rerun_on_resume=True)` with `
 - Save `groundingMetadata.groundingChunks[].maps` as `mapsSources`.
 - **Attribution (required):** render the sources directly under the summary, readable within one interaction, each linking to its `uri`. The literal text "Google Maps" is unmodified and has `translate="no"`. Font is Roboto or sans-serif, weight 400, 12–16px, color `#1F1F1F` or `#5E5E5E`.
 
+**Thinking level.** Set `thinking_config=ThinkingConfig(thinking_level="LOW")` (or `"MINIMAL"`) on every `FAST_MODEL` call: extract, match tie-break, summarize, receipt. The Day 1 smoke test took 18.5 s for a two-item structured answer at the default level. Only the planner keeps a high level.
+
 **Latency budget** (target < 2 min from upload to places):
 | Step | Estimate |
 |---|---|
