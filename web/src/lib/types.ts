@@ -191,15 +191,41 @@ export interface Transfer {
   confirmedAt?: Timestamp
 }
 
+export interface PaymentAmount {
+  currency: string
+  value: number
+}
+
+/** AP2 CartMandate as the merchant signed it (snake_case, as AP2 defines it). */
+export interface CartMandate {
+  contents: {
+    id: string
+    cart_expiry: string
+    merchant_name: string
+    payment_request: {
+      details: {
+        display_items: { label: string; amount: PaymentAmount }[]
+        total: { label: string; amount: PaymentAmount }
+      }
+    }
+  }
+  merchant_authorization: string | null
+}
+
 export interface Booking {
   sku: string
+  type: 'stay' | 'tour'
   title: string
   amountIdr: number
+  guests: number
   payerUid: string
+  cartMandate: CartMandate
   cartHash: string
-  approvals: Record<string, { at: Timestamp; cartHash: string }>
-  status: 'proposed' | 'approving' | 'paid' | 'failed'
+  approvals: Record<string, { at: Timestamp | null; cartHash: string }>
+  status: 'approving' | 'paying' | 'paid' | 'failed'
   failureReason?: string
+  receipt?: { order_id: string; amount_idr: number; merchant_name: string; paid_at: string }
+  createdAt: Timestamp
 }
 
 export type NotificationType =

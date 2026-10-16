@@ -10,6 +10,7 @@ import { useCollection } from '../../lib/hooks/useCollection'
 import { useDoc } from '../../lib/hooks/useDoc'
 import { listNames } from '../../lib/places'
 import type { ItineraryDay, Member, Place, Plan, Stop, WithId } from '../../lib/types'
+import { StayCard } from './StayCard'
 
 const PLANNED = new Set(['planned', 'splitting', 'settling', 'settled'])
 
@@ -185,18 +186,7 @@ function PlanNotes({ plan, byId }: { plan: Plan; byId: Map<string, WithId<Member
         </section>
       )}
 
-      {plan.stay && (
-        <section className="rounded-2xl border border-line bg-card p-4">
-          <p className="text-sm font-semibold text-lagoon">
-            Suggested {plan.stay.type === 'stay' ? 'stay' : 'tour'}
-          </p>
-          <h2 className="font-bold">{plan.stay.title}</h2>
-          <p className="text-sm text-muted tabular-nums">
-            {formatIdr(plan.stay.priceIdr)} per {plan.stay.unit}
-          </p>
-          <p className="mt-2 text-sm">{plan.stay.reason}</p>
-        </section>
-      )}
+      {plan.stay && <StayCard stay={plan.stay} />}
 
       {plan.warnings.length > 0 && (
         <section className="rounded-2xl border border-sunset/60 bg-sunset/10 p-4">

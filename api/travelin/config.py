@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     places_api_key: str = ""
     merchant_url: str = "http://localhost:8001"
+    merchant_id: str = "travelin-demo-merchant"
     travelin_signing_key: str = ""  # ES256 private key, PEM
 
     allowed_origins: str = "http://localhost:5173"  # comma-separated

@@ -41,6 +41,36 @@
       "price_idr": 175000,
       "unit": "person",
       "capacity": 10
+    },
+    {
+      "sku": "bdg-stay-dago-guesthouse",
+      "type": "stay",
+      "destination": "Bandung",
+      "title": "Dago Hillside Guesthouse (demo)",
+      "description": "Guesthouse in north Bandung with a city view, 3 bedrooms, breakfast included. Close to Dago's cafés.",
+      "price_idr": 900000,
+      "unit": "night",
+      "capacity": 6
+    },
+    {
+      "sku": "bdg-stay-lembang-villa",
+      "type": "stay",
+      "destination": "Bandung",
+      "title": "Lembang Pine Villa (demo)",
+      "description": "Villa among the pines in Lembang with a fire pit, 4 bedrooms, kitchen.",
+      "price_idr": 1600000,
+      "unit": "night",
+      "capacity": 8
+    },
+    {
+      "sku": "bdg-tour-tangkuban-sunrise",
+      "type": "tour",
+      "destination": "Bandung",
+      "title": "Tangkuban Perahu Sunrise Trip (demo)",
+      "description": "Early pickup to the crater rim for sunrise, with a stop at a tea plantation.",
+      "price_idr": 350000,
+      "unit": "person",
+      "capacity": 8
     }
   ]
 }

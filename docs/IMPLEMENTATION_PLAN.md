@@ -441,7 +441,9 @@ Use the Pydantic models from the official SDK: install with `uv pip install git+
    - the cart has not expired
    
    If all pass, the mock processor charges and returns a receipt. Otherwise it returns **403 with a reason**.
-7. The API marks the booking `paid` and creates an expense `{source: 'booking', paidBy: payer, participants: all}`, which flows into Split Bill. Members are notified.
+7. The API marks the booking `paid` and creates an expense `{source: 'booking', paidBy: payer, participants: all}`, which flows into Split Bill. The payer is the member who proposed the booking. Members are notified.
+
+Approvals in the group authorization carry hashed member IDs: the merchant needs to count approvals, not to know who the travelers are. For local development, both services generate a temporary signing key when none is configured.
 
 **Guardrails to show in the demo**
 - The API refuses to build a `PaymentMandate` without N of N approvals on the current cart hash.
