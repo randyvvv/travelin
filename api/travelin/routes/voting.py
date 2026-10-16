@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from google.cloud.firestore import (
     SERVER_TIMESTAMP,
     AsyncTransaction,
@@ -8,8 +8,9 @@ from google.cloud.firestore import (
     async_transactional,
 )
 
+from ..ai.plan import claim_planning, run_plan
 from ..auth import CurrentUser, MemberTrip
-from ..db import db, notify
+from ..db import db
 from ..schemas import CamelModel
 
 router = APIRouter(prefix="/v1", tags=["voting"])
@@ -22,7 +23,9 @@ class SubmitVotesResponse(CamelModel):
 
 
 @router.post("/trips/{trip_id}/votes:submit")
-async def submit_votes(trip: MemberTrip, user: CurrentUser) -> SubmitVotesResponse:
+async def submit_votes(
+    trip: MemberTrip, user: CurrentUser, background_tasks: BackgroundTasks
+) -> SubmitVotesResponse:
     trip_ref = db().document(f"trips/{trip['id']}")
     members_ref = trip_ref.collection("members")
 
@@ -57,12 +60,7 @@ async def submit_votes(trip: MemberTrip, user: CurrentUser) -> SubmitVotesRespon
         )
 
     all_submitted = await submit(db().transaction())
-    if all_submitted:
-        await notify(
-            trip["hostUid"],
-            type="voting_deadline",
-            text=f"Everyone has voted on {trip['name']}.",
-            trip_id=trip["id"],
-            link=f"/trips/{trip['id']}",
-        )
+    # The last vote in starts the Planner; it notifies everyone when the itinerary is ready.
+    if all_submitted and await claim_planning(trip_ref):
+        background_tasks.add_task(run_plan, trip["id"])
     return SubmitVotesResponse(all_submitted=all_submitted)

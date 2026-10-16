@@ -344,12 +344,14 @@ Implemented as an ADK 2.0 dynamic workflow: `@node(rerun_on_resume=True)` with `
 ### 8.2 Plan workflow (ADK)
 
 ```
-START → build_context → planner (LlmAgent, PLANNER_MODEL, output_schema=PlanResult)
-      → validate (code) → violations? and attempts < 3 → planner with violation list → validate …
+START → build_context → draft_plan node (PLANNER_MODEL, response_schema=PlanResult)
+      → check_plan node (code) → violations? and attempts < 3 → draft_plan with violation list → check_plan …
       → write itinerary + plan/current, status = planned, notify
 ```
 
-This is an ADK 2.0 dynamic workflow with a `while` loop, following the documented generate → check → refine pattern.
+This is an ADK 2.0 dynamic workflow with a `while` loop, following the documented generate → check → refine pattern. `draft_plan` calls Gemini through google-genai rather than an `LlmAgent`, so the loop can be tested with a fake planner. Members and places reach the model as short aliases (M1, P1), which it copies more reliably than UIDs or place IDs; they map back when the plan is saved.
+
+Planning starts when the last member submits votes, or when the host taps **Close voting and plan the trip**. If Gemini fails, the trip returns to voting with the error shown, and the host can try again.
 
 **Planner input (JSON):**
 - trip: dates, origin, destination

@@ -39,6 +39,11 @@ export interface Trip {
     error?: string
     usedFallback?: boolean
   }
+  planning?: {
+    stage: 'starting' | 'drafting' | 'revising' | 'done' | 'failed'
+    attempt: number
+    error?: string
+  }
   isDemo: boolean
   createdAt: Timestamp
 }
@@ -129,7 +134,14 @@ export interface Plan {
   compromises: { uid: string; gaveUp: string; got: string; reason: string }[]
   estimates: { uid: string; amountIdr: number }[]
   warnings: string[]
-  stay?: { sku: string; reason: string }
+  stay: {
+    sku: string
+    type: 'stay' | 'tour'
+    title: string
+    priceIdr: number
+    unit: 'night' | 'person'
+    reason: string
+  } | null
   model: string
   attempts: number
   generatedAt: Timestamp

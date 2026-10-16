@@ -11,16 +11,14 @@ from typing import Any
 
 from firebase_admin import storage
 from google.adk import Context, Workflow
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
 from google.adk.workflow import node
 from google.cloud.firestore import SERVER_TIMESTAMP, AsyncDocumentReference, FieldFilter, Increment
-from google.genai import types
 
 from ..config import get_settings
 from ..db import db, firebase_app, notify
 from ..places import geocode
 from . import extractor, summarizer, verifier
+from .runner import run_workflow, trip_id_from
 from .schemas import Candidate, DroppedPlace, PlaceSummary, VerifiedPlace
 
 logger = logging.getLogger(__name__)
@@ -318,7 +316,7 @@ async def _ingest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference) 
 
 @node(name="ingest_trip", rerun_on_resume=True)
 async def ingest_trip(ctx: Context, node_input: Any) -> dict:
-    trip_id = node_input.parts[0].text if isinstance(node_input, types.Content) else str(node_input)
+    trip_id = trip_id_from(node_input)
     trip_ref = db().document(f"trips/{trip_id}")
     try:
         return await _ingest(ctx, trip_id, trip_ref)
@@ -333,15 +331,8 @@ ingest_workflow = Workflow(name="travelin_ingest", edges=[("START", ingest_trip)
 
 async def run_ingest(trip_id: str) -> None:
     """Runs the ingest workflow for one trip. Progress and results land in Firestore."""
-    sessions = InMemorySessionService()
-    runner = Runner(node=ingest_workflow, session_service=sessions)
-    session = await sessions.create_session(app_name=runner.app_name, user_id="travelin-api")
-    message = types.Content(role="user", parts=[types.Part(text=trip_id)])
     try:
-        async for _event in runner.run_async(
-            user_id="travelin-api", session_id=session.id, new_message=message
-        ):
-            pass
+        await run_workflow(ingest_workflow, trip_id)
     except Exception:
         logger.exception("Ingest workflow crashed for trip %s", trip_id)
         await _fail(db().document(f"trips/{trip_id}"), GENERIC_FAILURE)

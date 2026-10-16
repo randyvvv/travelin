@@ -29,12 +29,41 @@ export function NextStep() {
           <p className="text-sm text-muted tabular-nums">
             {voted} of {members.length} have submitted their votes.
           </p>
+          {trip.planning?.stage === 'failed' && (
+            <ErrorText>{trip.planning.error ?? null}</ErrorText>
+          )}
           <Link to="places" className={`${buttonClass('primary')} w-full`}>
             Vote on places
           </Link>
         </section>
       )
     }
+    case 'planning': {
+      const revising = trip.planning?.stage === 'revising'
+      return (
+        <section role="status" className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <h2 className="font-bold">Planning your days</h2>
+          <p className="text-sm text-muted">
+            {revising
+              ? `Fixing conflicts in the draft (attempt ${trip.planning?.attempt} of 3).`
+              : "Drafting a plan around everyone's votes, budgets, and food needs."}
+          </p>
+          <div className="h-2 animate-pulse rounded-full bg-lagoon/40" />
+        </section>
+      )
+    }
+    case 'planned':
+      return (
+        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <h2 className="font-bold">Your itinerary is ready</h2>
+          <p className="text-sm text-muted">
+            See the plan for each day, and why the planner made the trade-offs it did.
+          </p>
+          <Link to="itinerary" className={`${buttonClass('primary')} w-full`}>
+            See the itinerary
+          </Link>
+        </section>
+      )
     default:
       return null
   }

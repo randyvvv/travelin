@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from travelin.routes import voting
+
 from .emulator import firestore_client, requires_emulators, sign_up
 from .test_trips import TRIP
 
@@ -24,7 +26,13 @@ def voting_trip(client: TestClient) -> tuple[str, dict, dict, str, str]:
 
 
 @requires_emulators
-def test_submitting_votes_updates_tallies_and_locks_votes(client: TestClient):
+def test_submitting_votes_updates_tallies_and_locks_votes(client: TestClient, monkeypatch):
+    planned: list[str] = []
+
+    async def fake_run_plan(trip_id: str) -> None:
+        planned.append(trip_id)
+
+    monkeypatch.setattr(voting, "run_plan", fake_run_plan)
     trip_id, host, friend, host_uid, friend_uid = voting_trip(client)
     store = firestore_client()
     members = store.collection(f"trips/{trip_id}/members")
@@ -47,11 +55,9 @@ def test_submitting_votes_updates_tallies_and_locks_votes(client: TestClient):
     assert places["p1"] == {"must": 1, "maybe": 1, "skip": 0}
     assert places["p2"] == {"must": 0, "maybe": 0, "skip": 1}
 
-    texts = [
-        doc.to_dict()["text"]
-        for doc in store.collection(f"users/{host_uid}/notifications").stream()
-    ]
-    assert "Everyone has voted on Jogja long weekend." in texts
+    # The last vote starts the Planner.
+    assert store.document(f"trips/{trip_id}").get().get("status") == "planning"
+    assert planned == [trip_id]
 
 
 @requires_emulators

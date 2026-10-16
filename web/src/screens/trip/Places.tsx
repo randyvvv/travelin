@@ -10,6 +10,7 @@ import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
 import { categoryLabel, listNames, savedByNames, sortPlaces, voteOptions } from '../../lib/places'
 import type { Place, Vote, WithId } from '../../lib/types'
+import { VotingPanel } from './VotingPanel'
 
 export function Places() {
   const trip = useTrip()
@@ -46,6 +47,8 @@ export function Places() {
           {voting && ' Vote on each one, then submit.'}
         </p>
       </header>
+
+      {voting && <VotingPanel />}
 
       {trip.pipeline && <DroppedPlaces dropped={trip.pipeline.dropped} />}
 
