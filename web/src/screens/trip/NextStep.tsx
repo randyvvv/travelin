@@ -57,11 +57,51 @@ export function NextStep() {
         <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
           <h2 className="font-bold">Your itinerary is ready</h2>
           <p className="text-sm text-muted">
-            See the plan for each day, and why the planner made the trade-offs it did.
+            See the plan for each day. During the trip, log who paid for what in Split bill.
           </p>
-          <Link to="itinerary" className={`${buttonClass('primary')} w-full`}>
-            See the itinerary
+          <div className="grid grid-cols-2 gap-3">
+            <Link to="itinerary" className={buttonClass('primary')}>
+              Itinerary
+            </Link>
+            <Link to="split" className={buttonClass('outline')}>
+              Split bill
+            </Link>
+          </div>
+        </section>
+      )
+    case 'splitting': {
+      const approved = members.filter(
+        (member) => member.splitApprovedVersion === trip.split.version,
+      ).length
+      return (
+        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <h2 className="font-bold">Approve the split</h2>
+          <p className="text-sm text-muted tabular-nums">
+            {approved} of {members.length} have approved. Payments start once everyone agrees.
+          </p>
+          <Link to="split" className={`${buttonClass('primary')} w-full`}>
+            Review the split
           </Link>
+        </section>
+      )
+    }
+    case 'settling':
+      return (
+        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <h2 className="font-bold">Settle up</h2>
+          <p className="text-sm text-muted">
+            Everyone approved. Pay the people you owe and confirm what you receive.
+          </p>
+          <Link to="pay" className={`${buttonClass('primary')} w-full`}>
+            Go to payments
+          </Link>
+        </section>
+      )
+    case 'settled':
+      return (
+        <section className="rounded-2xl bg-lagoon/10 p-4">
+          <h2 className="font-bold text-lagoon-dark">All settled</h2>
+          <p className="text-sm">Every payment is confirmed. This trip is now in your history.</p>
         </section>
       )
     default:

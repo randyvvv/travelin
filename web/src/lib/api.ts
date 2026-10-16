@@ -71,3 +71,24 @@ export interface InvitePreview {
   alreadyMember: boolean
   joinable: boolean
 }
+
+export interface SplitPreview {
+  balances: Record<string, number>
+  transfers: { from: string; to: string; amountIdr: number }[]
+}
+
+export interface ScanResult {
+  merchant: string
+  items: { name: string; unitPriceIdr: number; qty: number }[]
+  subtotalIdr: number
+  taxIdr: number
+  serviceIdr: number
+  discountIdr: number
+  totalIdr: number
+  warnings: string[]
+}
+
+/** What the expense editor receives after a receipt scan. */
+export interface ScannedReceipt extends ScanResult {
+  storagePath: string
+}

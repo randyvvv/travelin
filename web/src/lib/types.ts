@@ -39,6 +39,7 @@ export interface Trip {
     error?: string
     usedFallback?: boolean
   }
+  paymentStatus?: Record<string, 'unpaid' | 'waiting' | 'settled'>
   planning?: {
     stage: 'starting' | 'drafting' | 'revising' | 'done' | 'failed'
     attempt: number
@@ -147,24 +148,34 @@ export interface Plan {
   generatedAt: Timestamp
 }
 
+export type SplitMode = 'equal' | 'shares' | 'exact' | 'items'
+
+export interface ExpenseItem {
+  name: string
+  unitPriceIdr: number
+  qty: number
+  portions: Record<string, number>
+}
+
 export interface Expense {
   title: string
   amountIdr: number
   paidBy: string
   split: {
-    mode: 'equal' | 'shares' | 'exact' | 'items'
+    mode: SplitMode
     participants: string[]
-    shares?: Record<string, number>
-    exact?: Record<string, number>
+    shares: Record<string, number> | null
+    exact: Record<string, number> | null
   }
-  items?: { name: string; unitPriceIdr: number; qty: number; portions: Record<string, number> }[]
-  taxIdr?: number
-  serviceIdr?: number
-  discountIdr?: number
+  items: ExpenseItem[]
+  taxIdr: number
+  serviceIdr: number
+  discountIdr: number
   computedShares: Record<string, number>
-  receiptPath?: string
+  receiptPath: string | null
   source: 'manual' | 'receipt' | 'booking'
   createdBy: string
+  createdAt: Timestamp
   updatedAt: Timestamp
 }
 

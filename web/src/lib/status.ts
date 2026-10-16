@@ -10,3 +10,12 @@ export const tripStatusLabel: Record<TripStatus, string> = {
   settling: 'Settling up',
   settled: 'Settled',
 }
+
+/** Expenses can be added or edited until payments start. */
+export const EXPENSE_EDITABLE: ReadonlySet<TripStatus> = new Set(['planned', 'splitting'])
+
+export const paymentLabel: Record<'unpaid' | 'waiting' | 'settled', string> = {
+  unpaid: 'Unpaid',
+  waiting: 'Waiting',
+  settled: 'Settled',
+}

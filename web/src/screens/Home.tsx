@@ -7,7 +7,7 @@ import { buttonClass } from '../components/styles'
 import { db } from '../lib/firebase'
 import { formatDateRange } from '../lib/format'
 import { useCollection } from '../lib/hooks/useCollection'
-import { tripStatusLabel } from '../lib/status'
+import { paymentLabel, tripStatusLabel } from '../lib/status'
 import type { Trip, WithId } from '../lib/types'
 
 export function Home() {
@@ -37,8 +37,16 @@ export function Home() {
         </Link>
       </section>
 
-      <TripList title="Ongoing" trips={ongoing} loading={loading} empty="No trips yet." />
-      {history.length > 0 && <TripList title="History" trips={history} loading={false} />}
+      <TripList
+        title="Ongoing"
+        trips={ongoing}
+        uid={user?.uid}
+        loading={loading}
+        empty="No trips yet."
+      />
+      {history.length > 0 && (
+        <TripList title="History" trips={history} uid={user?.uid} loading={false} />
+      )}
     </div>
   )
 }
@@ -46,11 +54,13 @@ export function Home() {
 function TripList({
   title,
   trips,
+  uid,
   loading,
   empty,
 }: {
   title: string
   trips: WithId<Trip>[]
+  uid: string | undefined
   loading: boolean
   empty?: string
 }) {
@@ -76,7 +86,8 @@ function TripList({
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full bg-paper px-2.5 py-1 text-xs font-semibold">
-                  {tripStatusLabel[trip.status]}
+                  {(uid && trip.paymentStatus?.[uid] && paymentLabel[trip.paymentStatus[uid]]) ||
+                    tripStatusLabel[trip.status]}
                 </span>
                 <ChevronRightIcon className="shrink-0 text-muted" />
               </Link>
