@@ -16,6 +16,18 @@ interface ApiOptions {
   body?: unknown
 }
 
+/** FastAPI sends a string for HTTPException and a list for validation errors. */
+function describe(detail: unknown, fallback: string): string {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    const first: unknown = detail[0]
+    if (first && typeof first === 'object' && 'msg' in first && typeof first.msg === 'string') {
+      return first.msg.replace(/^Value error, /, '')
+    }
+  }
+  return fallback
+}
+
 /** Calls travelin-api with the signed-in user's Firebase ID token. */
 export async function api<T>(path: string, { method, body }: ApiOptions = {}): Promise<T> {
   const token = await auth.currentUser?.getIdToken()
@@ -33,7 +45,29 @@ export async function api<T>(path: string, { method, body }: ApiOptions = {}): P
       .json()
       .then((data: { detail?: unknown }) => data.detail)
       .catch(() => undefined)
-    throw new ApiError(response.status, typeof detail === 'string' ? detail : response.statusText)
+    throw new ApiError(response.status, describe(detail, response.statusText))
   }
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
+}
+
+/** A message to show the user for any error thrown by `api`. */
+export function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof ApiError ? error.message : fallback
+}
+
+export interface CreateTripResponse {
+  tripId: string
+  inviteCode: string
+}
+
+export interface InvitePreview {
+  tripId: string
+  name: string
+  destination: string
+  startDate: string
+  endDate: string
+  hostName: string
+  memberCount: number
+  alreadyMember: boolean
+  joinable: boolean
 }

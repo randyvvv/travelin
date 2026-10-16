@@ -23,7 +23,8 @@ export interface Trip {
   startDate: string
   endDate: string
   origin: string
-  destination: { name: string } & LatLng
+  // lat/lng are null until the destination is geocoded
+  destination: { name: string; lat: number | null; lng: number | null }
   hostUid: string
   memberUids: string[]
   inviteCode: string
@@ -61,6 +62,7 @@ export interface Member {
   votes: Record<string, Vote>
   votesSubmittedAt: Timestamp | null
   splitApprovedVersion: number | null
+  joinedAt: Timestamp
 }
 
 export interface Reel {
@@ -71,8 +73,10 @@ export interface Reel {
   platform: 'instagram' | 'tiktok' | 'youtube' | 'other'
   status: 'queued' | 'processing' | 'done' | 'failed' | 'link_only'
   contentHash?: string
+  fileName?: string
   placesFound?: number
   error?: string
+  createdAt: Timestamp
 }
 
 export interface MapsSource {
@@ -90,7 +94,7 @@ export interface Place {
   rating?: number
   userRatingCount?: number
   priceLevel?: string
-  openingHours?: unknown
+  openingHours?: { weekdayDescriptions?: string[] } | null
   photoName?: string
   mentions: { reelId: string; atSec: number; evidence: string }[]
   savedBy: string[]
@@ -177,6 +181,7 @@ export interface Booking {
 
 export type NotificationType =
   | 'joined'
+  | 'voting_open'
   | 'voting_deadline'
   | 'plan_ready'
   | 'split_reopened'

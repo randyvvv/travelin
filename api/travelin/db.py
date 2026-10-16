@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 import firebase_admin
@@ -22,6 +23,9 @@ def firebase_app() -> firebase_admin.App:
 
 @lru_cache
 def db() -> AsyncClient:
+    if os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        # The emulator takes no credentials, but firebase_admin would still demand ADC.
+        return AsyncClient(project=get_settings().google_cloud_project)
     return firestore_async.client(firebase_app())
 
 

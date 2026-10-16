@@ -77,8 +77,17 @@ uv run --project api python scripts/smoke_gemini.py --video gs://<bucket>/sample
 ```bash
 cd api && uv run pytest && uv run ruff check .
 cd merchant && uv run pytest && uv run ruff check .
-cd web && npm run lint && npm run build
+cd web && npm run lint && npm run format:check && npm run build
 ```
+
+API integration tests (trips, ingest workflow, voting) and the Firestore/Storage security rules tests run against the Firebase emulators, on the offline `demo-travelin` project. Gemini and Places are replaced by fakes there. They need Java 21+:
+
+```bash
+cd firebase && npm install && cd ..
+./scripts/test-emulators.sh
+```
+
+Without the emulators, `uv run pytest` skips those tests.
 
 ## Deploy
 

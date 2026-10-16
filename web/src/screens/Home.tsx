@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../app/auth-context'
 import { ChevronRightIcon } from '../components/icons'
+import { buttonClass } from '../components/styles'
 import { db } from '../lib/firebase'
 import { formatDateRange } from '../lib/format'
 import { useCollection } from '../lib/hooks/useCollection'
@@ -31,10 +32,7 @@ export function Home() {
       <section>
         <p className="text-muted">Hi {user?.displayName?.split(' ')[0] ?? 'there'},</p>
         <h1 className="text-2xl font-extrabold tracking-tight">Where's the squad going next?</h1>
-        <Link
-          to="/trips/new"
-          className="mt-5 flex h-12 items-center justify-center rounded-full bg-lagoon font-semibold text-white transition hover:bg-lagoon-dark"
-        >
+        <Link to="/trips/new" className={`${buttonClass('primary')} mt-5 w-full`}>
           Create a trip
         </Link>
       </section>
