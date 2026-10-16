@@ -1,0 +1,7 @@
+# Keep local environments and secrets out of the Cloud Build upload.
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.env
+tests/

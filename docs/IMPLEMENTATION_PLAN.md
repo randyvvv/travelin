@@ -585,29 +585,22 @@ P1: a Cloud Scheduler job every 15 min calls `POST /v1/cron/deadlines` to send "
 
 ## 15. Deployment
 
+`scripts/deploy.sh` is the source of truth; run it with bash after `gcloud config set project`:
+
 ```bash
-# Web + rules
-cd web && npm run build && cd ..
-firebase deploy --only hosting,firestore,storage
-
-# API
-gcloud run deploy travelin-api --source api --region asia-southeast2 \
-  --service-account travelin-api@$PROJECT.iam.gserviceaccount.com \
-  --min-instances 1 --no-cpu-throttling --timeout 600 --allow-unauthenticated \
-  --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=global,FAST_MODEL=gemini-3.8-flash,PLANNER_MODEL=gemini-4-argon,... \
-  --set-secrets PLACES_API_KEY=places-api-key:latest,TRAVELIN_SIGNING_KEY=travelin-signing-key:latest
-
-# Merchant
-gcloud run deploy travelin-merchant --source merchant --region asia-southeast2 \
-  --min-instances 1 --allow-unauthenticated \
-  --set-secrets MERCHANT_SIGNING_KEY=merchant-signing-key:latest
+bash scripts/deploy.sh            # api -> merchant -> link MERCHANT_URL -> web + rules
+bash scripts/deploy.sh api        # or one part: api | merchant | web
 ```
 
-`--allow-unauthenticated` is intentional. Authentication happens in the app via Firebase ID tokens, and CORS is restricted to `ALLOWED_ORIGINS`.
+What it sets:
 
-**Deploy early and continuously.** Hosting goes live on Day 1, and both Cloud Run services go live on Day 2.
+- **travelin-api:** `--min-instances 1 --no-cpu-throttling --timeout 600 --memory 1Gi`, service account `travelin-api`, env vars from a temporary YAML file (`ALLOWED_ORIGINS` contains commas), secrets `PLACES_API_KEY` and `TRAVELIN_SIGNING_KEY`.
+- **travelin-merchant:** `--min-instances 1 --memory 512Mi`, service account `travelin-merchant`, `TRAVELIN_JWKS_URL` pointing at the API, secret `MERCHANT_SIGNING_KEY`.
+- **Web:** built with `VITE_API_URL` set to the API's Cloud Run URL, then `firebase deploy --only hosting,firestore,storage`.
 
----
+`--allow-unauthenticated` is intentional. Authentication happens in the app via Firebase ID tokens, and CORS is restricted to `ALLOWED_ORIGINS`. `api/.gcloudignore` and `merchant/.gcloudignore` keep `.venv` and `.env` out of the Cloud Build upload.
+
+**Deploy early and continuously.** After judging, set both services back to `--min-instances 0` to stop the always-on billing.
 
 ## 16. Schedule
 
