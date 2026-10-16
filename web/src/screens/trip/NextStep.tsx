@@ -20,7 +20,14 @@ export function NextStep() {
     case 'gathering':
       return <FindPlaces />
     case 'extracting':
-      return trip.pipeline ? <PipelineProgress pipeline={trip.pipeline} /> : null
+      return trip.pipeline ? (
+        <PipelineProgress pipeline={trip.pipeline} />
+      ) : (
+        <section role="status" className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <h2 className="font-bold">Starting Reel processing</h2>
+          <div className="h-2 animate-pulse rounded-full bg-lagoon/40" />
+        </section>
+      )
     case 'voting': {
       const voted = members.filter((member) => member.votesSubmittedAt != null).length
       return (

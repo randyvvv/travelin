@@ -5,6 +5,8 @@ import { Join } from '../screens/Join'
 import { Login } from '../screens/Login'
 import { NotFound } from '../screens/NotFound'
 import { Notifications } from '../screens/Notifications'
+import { Profile } from '../screens/Profile'
+import { PlannedTrips, TripHistory } from '../screens/TripLists'
 import { Booking } from '../screens/trip/Booking'
 import { ExpenseEditor } from '../screens/trip/ExpenseEditor'
 import { Itinerary } from '../screens/trip/Itinerary'
@@ -30,6 +32,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'notifications', element: <Notifications /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'trips/history', element: <TripHistory /> },
+      { path: 'trips', element: <PlannedTrips /> },
       { path: 'join/:inviteCode', element: <Join /> },
       { path: 'trips/new', element: <CreateTrip /> },
       {

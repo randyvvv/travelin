@@ -2,10 +2,12 @@ import { onSnapshot, type Query } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import type { WithId } from '../types'
 
+type CollectionError = Error & { code?: string }
+
 interface Snapshot<T> {
   query: Query | null
   data: WithId<T>[]
-  error: Error | null
+  error: CollectionError | null
 }
 
 /** Live Firestore query. Memoize `query` (useMemo); pass `null` to wait. */

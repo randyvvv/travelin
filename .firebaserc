@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "sosro-511617"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

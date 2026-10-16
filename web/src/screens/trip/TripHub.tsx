@@ -8,7 +8,7 @@ import { formatDateRange } from '../../lib/format'
 import { tripStatusLabel } from '../../lib/status'
 import { NextStep } from './NextStep'
 
-const sections = [
+const inputs = [
   {
     to: 'places',
     label: 'Places & vote',
@@ -16,12 +16,16 @@ const sections = [
   },
   { to: 'prefs', label: 'My preferences', hint: 'Budget, interests, food, things to skip' },
   { to: 'reels', label: 'Reels', hint: 'Optional: videos the squad saved' },
+]
+
+const planOutputs = [
   { to: 'itinerary', label: 'Itinerary', hint: 'Day-by-day plan and why' },
   { to: 'split', label: 'Split bill', hint: 'Expenses and who owes whom' },
-  { to: 'pay', label: 'Payments', hint: 'Pay and confirm transfers' },
 ]
 
 const INVITING = new Set(['gathering', 'extracting', 'voting'])
+const PLAN_READY = new Set(['planned', 'splitting', 'settling', 'settled'])
+const PROCESSING = new Set(['extracting', 'planning'])
 
 export function TripHub() {
   const trip = useTrip()
@@ -42,6 +46,23 @@ export function TripHub() {
       <NextStep />
 
       {INVITING.has(trip.status) && <InviteCard name={trip.name} inviteCode={trip.inviteCode} />}
+
+      {PROCESSING.has(trip.status) ? null : PLAN_READY.has(trip.status) ? (
+        <>
+          <TripSection
+            title="Trip plan"
+            sections={[
+              ...planOutputs,
+              ...(trip.status === 'settling' || trip.status === 'settled'
+                ? [{ to: 'pay', label: 'Payments', hint: 'Pay and confirm transfers' }]
+                : []),
+            ]}
+          />
+          <TripSection title="Inputs" sections={inputs} />
+        </>
+      ) : (
+        <TripSection title="Plan your trip" sections={inputs} />
+      )}
 
       <section>
         <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
@@ -68,7 +89,20 @@ export function TripHub() {
           ))}
         </ul>
       </section>
+    </div>
+  )
+}
 
+function TripSection({
+  title,
+  sections,
+}: {
+  title: string
+  sections: { to: string; label: string; hint: string }[]
+}) {
+  return (
+    <section>
+      <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">{title}</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
         {sections.map((section) => (
           <li key={section.to}>
@@ -82,7 +116,7 @@ export function TripHub() {
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   )
 }
 
