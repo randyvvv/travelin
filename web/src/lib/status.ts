@@ -1,7 +1,7 @@
 import type { TripStatus } from './types'
 
 export const tripStatusLabel: Record<TripStatus, string> = {
-  gathering: 'Collecting Reels',
+  gathering: 'Collecting places',
   extracting: 'Finding places',
   voting: 'Voting',
   planning: 'Planning',

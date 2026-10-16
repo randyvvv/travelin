@@ -8,27 +8,10 @@ from typing import Any
 from rapidfuzz import fuzz
 
 from ..config import get_settings
-from ..places import search_text
+from ..places import SEARCH_FIELD_MASK, search_text
 from .genai import client, fast_config
 from .schemas import Candidate, DroppedPlace, MatchDecision, VerifiedPlace
 
-FIELD_MASK = ",".join(
-    f"places.{field}"
-    for field in (
-        "id",
-        "displayName",
-        "formattedAddress",
-        "location",
-        "types",
-        "googleMapsUri",
-        "regularOpeningHours",
-        "rating",
-        "userRatingCount",
-        "priceLevel",
-        "priceRange",
-        "photos",
-    )
-)
 SEARCH_RADIUS_M = 50_000.0
 MAX_DISTANCE_KM = 80.0
 # rapidfuzz token_set_ratio, 0-100. Between the two, Gemini decides.
@@ -125,7 +108,7 @@ async def verify(candidate: Candidate, destination: dict[str, Any]) -> VerifiedP
     lat, lng = destination.get("lat"), destination.get("lng")
     results = await search_text(
         f"{candidate.name}, {candidate.city_hint or destination['name']}",
-        field_mask=FIELD_MASK,
+        field_mask=SEARCH_FIELD_MASK,
         bias=(lat, lng, SEARCH_RADIUS_M) if lat is not None and lng is not None else None,
         page_size=3,
     )

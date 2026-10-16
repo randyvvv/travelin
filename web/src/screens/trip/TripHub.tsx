@@ -9,9 +9,13 @@ import { tripStatusLabel } from '../../lib/status'
 import { NextStep } from './NextStep'
 
 const sections = [
-  { to: 'reels', label: 'Reels', hint: 'The Reels your squad saved' },
+  {
+    to: 'places',
+    label: 'Places & vote',
+    hint: 'Search, AI ideas, and Reels, all checked on Maps',
+  },
   { to: 'prefs', label: 'My preferences', hint: 'Budget, interests, food, things to skip' },
-  { to: 'places', label: 'Places & vote', hint: 'Verified places from your Reels' },
+  { to: 'reels', label: 'Reels', hint: 'Optional: videos the squad saved' },
   { to: 'itinerary', label: 'Itinerary', hint: 'Day-by-day plan and why' },
   { to: 'split', label: 'Split bill', hint: 'Expenses and who owes whom' },
   { to: 'pay', label: 'Payments', hint: 'Pay and confirm transfers' },

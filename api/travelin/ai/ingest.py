@@ -2,6 +2,8 @@
 
 Each step is an ADK node that fans out over its items in parallel. A failure on one
 item (a video Gemini can't read, a place Maps can't find) never fails the whole run.
+Places the squad already added by search or AI suggestion stay on the board; Reels
+add to them. With no Reels at all, the run simply opens voting.
 """
 
 import asyncio
@@ -12,7 +14,13 @@ from typing import Any
 from firebase_admin import storage
 from google.adk import Context, Workflow
 from google.adk.workflow import node
-from google.cloud.firestore import SERVER_TIMESTAMP, AsyncDocumentReference, FieldFilter, Increment
+from google.cloud.firestore import (
+    SERVER_TIMESTAMP,
+    ArrayUnion,
+    AsyncDocumentReference,
+    FieldFilter,
+    Increment,
+)
 
 from ..config import get_settings
 from ..db import db, firebase_app, notify
@@ -94,13 +102,32 @@ def merge_verified(outcomes: list[dict[str, Any]]) -> tuple[list[dict], list[dic
     return list(places.values()), list(dropped.values())
 
 
+def summary_fields(summary: dict[str, Any] | None) -> dict[str, Any]:
+    summary = summary or PlaceSummary().model_dump()
+    return {
+        "highlights": summary["highlights"],
+        "bestTime": summary["best_time"],
+        "priceNote": summary["price_note"],
+        "dietaryNote": summary["dietary_note"],
+        "crowdNote": summary["crowd_note"],
+    }
+
+
 def place_document(
-    entry: dict[str, Any], summary: dict[str, Any], sources: list[dict]
+    place: VerifiedPlace,
+    category: str,
+    summary: dict[str, Any] | None,
+    sources: list[dict],
+    *,
+    mentions: list[dict] | None = None,
+    saved_by: list[str] | None = None,
+    added_by: str | None = None,
+    suggestion: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    place = VerifiedPlace(**entry["place"])
+    """A place on the board. `summary` None means it is still being written."""
     return {
         "name": place.name,
-        "category": entry["category"],
+        "category": category,
         "address": place.address,
         "location": {"lat": place.lat, "lng": place.lng},
         "googleMapsUri": place.google_maps_uri,
@@ -111,15 +138,12 @@ def place_document(
         "priceRange": place.price_range,
         "openingHours": place.opening_hours,
         "photoName": place.photo_name,
-        "mentions": entry["mentions"],
-        "savedBy": entry["savedBy"],
-        "summary": {
-            "highlights": summary["highlights"],
-            "bestTime": summary["best_time"],
-            "priceNote": summary["price_note"],
-            "dietaryNote": summary["dietary_note"],
-            "crowdNote": summary["crowd_note"],
-        },
+        "mentions": mentions or [],
+        "savedBy": saved_by or [],
+        "addedBy": added_by,
+        "suggestion": suggestion,
+        "summary": summary_fields(summary),
+        "summaryPending": summary is None,
         "mapsSources": sources,
         "tally": {"must": 0, "maybe": 0, "skip": 0},
     }
@@ -128,8 +152,9 @@ def place_document(
 # --- ADK nodes ---------------------------------------------------------------------------
 
 
-async def _tick(trip_id: str) -> None:
-    await db().document(f"trips/{trip_id}").update({"pipeline.done": Increment(1)})
+async def _tick(trip_id: str, progress: str = "pipeline") -> None:
+    """Counts one finished item on the trip's progress field (pipeline or suggesting)."""
+    await db().document(f"trips/{trip_id}").update({f"{progress}.done": Increment(1)})
 
 
 @node(name="extract_reel", parallel_worker=True, max_parallel_workers=4)
@@ -163,17 +188,18 @@ async def verify_candidate(node_input: dict) -> dict:
     except Exception:
         logger.exception("Verification failed for %r", candidate.name)
         outcome = DroppedPlace(name=candidate.name, reason="couldn't be checked on Google Maps")
-    await _tick(node_input["tripId"])
+    await _tick(node_input["tripId"], node_input.get("progress", "pipeline"))
     if isinstance(outcome, DroppedPlace):
         return {"dropped": outcome.model_dump()}
     return {
         "place": outcome.model_dump(),
         "category": candidate.category,
-        "reelId": node_input["reelId"],
-        "uploaderUid": node_input["uploaderUid"],
+        "reelId": node_input.get("reelId"),
+        "uploaderUid": node_input.get("uploaderUid"),
         "atSec": candidate.appears_at_sec,
         "evidence": candidate.evidence,
         "quote": candidate.quote,
+        "reason": node_input.get("reason", ""),
     }
 
 
@@ -186,7 +212,7 @@ async def summarize_place(node_input: dict) -> dict:
         # The place is verified, so it still goes on the board without a summary.
         logger.exception("Summary failed for %r", place.name)
         summary, sources = PlaceSummary(), []
-    await _tick(node_input["tripId"])
+    await _tick(node_input["tripId"], node_input.get("progress", "pipeline"))
     return {"placeId": place.place_id, "summary": summary.model_dump(), "sources": sources}
 
 
@@ -267,28 +293,47 @@ async def _ingest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference) 
         batch.update(trip_ref.collection("reels").document(result["reelId"]), update)
     await batch.commit()
 
-    if not places:
+    places_ref = trip_ref.collection("places")
+    existing = {snapshot.id async for snapshot in places_ref.stream()}
+    new_entries = [entry for entry in places if entry["place"]["place_id"] not in existing]
+    known_entries = [entry for entry in places if entry["place"]["place_id"] in existing]
+    if not new_entries and not existing:
         await _fail(
             trip_ref,
             "No real places could be verified from these Reels. Add Reels that name specific "
-            "places, then try again.",
+            "places, search for places, or ask for AI suggestions.",
             dropped,
         )
         return {"ok": False}
 
-    await _stage(trip_ref, "summarizing", len(places))
+    await _stage(trip_ref, "summarizing", len(new_entries))
     summaries = await ctx.run_node(
         summarize_place,
         [
             {"tripId": trip_id, "destination": destination, "place": entry["place"]}
-            for entry in places
+            for entry in new_entries
         ],
     )
 
     batch = db().batch()
-    for entry, summary in zip(places, summaries, strict=True):
-        place_ref = trip_ref.collection("places").document(summary["placeId"])
-        batch.set(place_ref, place_document(entry, summary["summary"], summary["sources"]))
+    for entry, summary in zip(new_entries, summaries, strict=True):
+        batch.set(
+            places_ref.document(summary["placeId"]),
+            place_document(
+                VerifiedPlace(**entry["place"]),
+                entry["category"],
+                summary["summary"],
+                summary["sources"],
+                mentions=entry["mentions"],
+                saved_by=entry["savedBy"],
+            ),
+        )
+    for entry in known_entries:
+        # Already on the board from a search or suggestion; the Reel adds interest.
+        batch.update(
+            places_ref.document(entry["place"]["place_id"]),
+            {"mentions": ArrayUnion(entry["mentions"]), "savedBy": ArrayUnion(entry["savedBy"])},
+        )
     batch.update(
         trip_ref,
         {
@@ -301,13 +346,13 @@ async def _ingest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference) 
     )
     await batch.commit()
 
-    count = len(places)
-    found = f"{count} {'place' if count == 1 else 'places'}"
+    count = len(existing) + len(new_entries)
+    ready = f"{count} {'place is' if count == 1 else 'places are'}"
     for uid in trip["memberUids"]:
         await notify(
             uid,
             type="voting_open",
-            text=f"{found} found in your Reels. Time to vote!",
+            text=f"{ready} ready. Time to vote!",
             trip_id=trip_id,
             link=f"/trips/{trip_id}/places",
         )

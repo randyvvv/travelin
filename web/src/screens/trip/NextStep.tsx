@@ -9,7 +9,7 @@ import { buttonClass } from '../../components/styles'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
-import type { Reel } from '../../lib/types'
+import type { Place, Reel } from '../../lib/types'
 
 /** The one thing the squad should do next, based on the trip's stage. */
 export function NextStep() {
@@ -120,6 +120,9 @@ function FindPlaces() {
     [trip.id],
   )
   const { data: videos } = useCollection<Reel>(reelsQuery)
+  const placesQuery = useMemo(() => query(collection(db, 'trips', trip.id, 'places')), [trip.id])
+  const { data: places } = useCollection<Place>(placesQuery)
+  const ready = videos.length > 0 || places.length > 0
   const isHost = user?.uid === trip.hostUid
   const failed = trip.pipeline?.stage === 'failed' ? trip.pipeline : null
 
@@ -137,14 +140,17 @@ function FindPlaces() {
 
   return (
     <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
-      <h2 className="font-bold">Collect Reels, then find places</h2>
+      <h2 className="font-bold">Build the list, then vote</h2>
       <p className="text-sm text-muted">
-        Everyone adds their saved Reels and preferences. The AI then watches every video, checks
-        each place on Google Maps, and sums up what visitors say.
+        Everyone sets their preferences and adds places: search for them, ask the AI for ideas, or
+        add the Reels you saved. Every place gets checked on Google Maps.
       </p>
-      <div className="flex gap-3 text-sm font-semibold">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold">
+        <Link to="places" className="text-lagoon">
+          Places ({places.length})
+        </Link>
         <Link to="reels" className="text-lagoon">
-          Add Reels ({videos.length})
+          Reels ({videos.length})
         </Link>
         <Link to="prefs" className="text-lagoon">
           My preferences
@@ -164,19 +170,23 @@ function FindPlaces() {
           <button
             type="button"
             onClick={start}
-            disabled={busy || videos.length === 0}
+            disabled={busy || !ready}
             className={`${buttonClass('primary')} w-full`}
           >
-            {busy ? 'Starting…' : failed ? 'Try again' : 'Find places'}
+            {busy
+              ? 'Starting…'
+              : failed
+                ? 'Try again'
+                : videos.length > 0
+                  ? 'Read the Reels and start voting'
+                  : 'Start voting'}
           </button>
-          {videos.length === 0 && (
-            <p className="text-center text-xs text-muted">Add at least one Reel video first.</p>
-          )}
+          {!ready && <p className="text-center text-xs text-muted">Add a place or a Reel first.</p>}
         </>
       ) : (
         <p className="text-sm text-muted">
-          {byId.get(trip.hostUid)?.displayName.split(' ')[0] ?? 'The host'} starts finding places
-          once the squad is ready.
+          {byId.get(trip.hostUid)?.displayName.split(' ')[0] ?? 'The host'} starts voting once the
+          list looks good.
         </p>
       )}
     </section>

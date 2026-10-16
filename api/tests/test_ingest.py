@@ -155,7 +155,7 @@ def test_ingest_turns_reels_into_verified_places(client: TestClient, fakes):
         doc.to_dict()["text"]
         for doc in store.collection(f"users/{friend_uid}/notifications").stream()
     ]
-    assert "2 places found in your Reels. Time to vote!" in texts
+    assert "2 places are ready. Time to vote!" in texts
 
     # Starting again is refused once the trip has moved on.
     assert client.post(f"/v1/trips/{trip_id}/ingest", headers=host).status_code == 409

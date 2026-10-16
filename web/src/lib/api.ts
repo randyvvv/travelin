@@ -92,3 +92,13 @@ export interface ScanResult {
 export interface ScannedReceipt extends ScanResult {
   storagePath: string
 }
+
+export interface PlaceHit {
+  placeId: string
+  name: string
+  address: string
+  rating: number | null
+  userRatingCount: number | null
+  category: string
+  onBoard: boolean
+}

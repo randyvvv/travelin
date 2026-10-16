@@ -40,6 +40,13 @@ export interface Trip {
     usedFallback?: boolean
   }
   paymentStatus?: Record<string, 'unpaid' | 'waiting' | 'settled'>
+  suggesting?: {
+    stage: 'starting' | 'thinking' | 'verifying' | 'summarizing' | 'done' | 'failed'
+    done: number
+    total: number
+    added: number
+    error?: string
+  }
   planning?: {
     stage: 'starting' | 'drafting' | 'revising' | 'done' | 'failed'
     attempt: number
@@ -113,6 +120,9 @@ export interface Place {
   }
   mapsSources: MapsSource[]
   tally: Record<Vote, number>
+  addedBy?: string | null
+  suggestion?: { reason: string } | null
+  summaryPending?: boolean
 }
 
 export interface Stop {

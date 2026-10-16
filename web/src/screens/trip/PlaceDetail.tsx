@@ -49,6 +49,11 @@ export function PlaceDetail() {
         </p>
         <h1 className="text-2xl font-extrabold tracking-tight text-balance">{place.name}</h1>
         <p className="text-muted">{place.address}</p>
+        {place.suggestion && (
+          <p className="text-sm">
+            <span className="font-semibold">Suggested by AI:</span> {place.suggestion.reason}
+          </p>
+        )}
         <p className="text-sm tabular-nums">
           {place.rating != null && (
             <>
@@ -66,6 +71,12 @@ export function PlaceDetail() {
           )}
         </p>
       </header>
+
+      {place.summaryPending && (
+        <p role="status" className="text-muted">
+          Writing a summary from Google Maps reviews…
+        </p>
+      )}
 
       {(summary.highlights.length > 0 || facts.length > 0) && (
         <section className="rounded-2xl border border-line bg-card p-4">
@@ -102,36 +113,40 @@ export function PlaceDetail() {
         </section>
       )}
 
-      <section>
-        <h2 className="mb-2 font-bold">Seen in your Reels</h2>
-        <ul className="space-y-2 text-sm">
-          {place.mentions.map((mention, index) => {
-            const reel = reelsById.get(mention.reelId)
-            const uploader = reel ? byId.get(reel.uploaderUid)?.displayName : undefined
-            return (
-              <li
-                key={`${mention.reelId}-${index}`}
-                className="flex flex-wrap items-baseline gap-x-2"
-              >
-                <span>
-                  {uploader ? `${uploader}'s Reel` : 'A Reel'} at{' '}
-                  <span className="font-semibold tabular-nums">{formatSecond(mention.atSec)}</span>
-                </span>
-                {reel?.sourceUrl && (
-                  <a
-                    href={reel.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-lagoon"
-                  >
-                    Open original
-                  </a>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </section>
+      {place.mentions.length > 0 && (
+        <section>
+          <h2 className="mb-2 font-bold">Seen in your Reels</h2>
+          <ul className="space-y-2 text-sm">
+            {place.mentions.map((mention, index) => {
+              const reel = reelsById.get(mention.reelId)
+              const uploader = reel ? byId.get(reel.uploaderUid)?.displayName : undefined
+              return (
+                <li
+                  key={`${mention.reelId}-${index}`}
+                  className="flex flex-wrap items-baseline gap-x-2"
+                >
+                  <span>
+                    {uploader ? `${uploader}'s Reel` : 'A Reel'} at{' '}
+                    <span className="font-semibold tabular-nums">
+                      {formatSecond(mention.atSec)}
+                    </span>
+                  </span>
+                  {reel?.sourceUrl && (
+                    <a
+                      href={reel.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-lagoon"
+                    >
+                      Open original
+                    </a>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       {place.googleMapsUri && (
         <a

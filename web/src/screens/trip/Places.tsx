@@ -8,8 +8,9 @@ import { buttonClass } from '../../components/styles'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
-import { categoryLabel, listNames, savedByNames, sortPlaces, voteOptions } from '../../lib/places'
+import { categoryLabel, listNames, placeOrigin, sortPlaces, voteOptions } from '../../lib/places'
 import type { Place, Vote, WithId } from '../../lib/types'
+import { CollectPlaces } from './CollectPlaces'
 import { VotingPanel } from './VotingPanel'
 
 export function Places() {
@@ -25,15 +26,33 @@ export function Places() {
 
   if (trip.status === 'gathering' || trip.status === 'extracting') {
     return (
-      <div className="space-y-4 py-2">
-        <h1 className="text-2xl font-extrabold tracking-tight">Places & vote</h1>
+      <div className="space-y-5 py-2">
+        <header>
+          <h1 className="text-2xl font-extrabold tracking-tight">Places</h1>
+          <p className="mt-1 text-muted">
+            Build the list together: search for places, ask the AI for ideas, or add the Reels you
+            saved. Voting starts when the host is ready.
+          </p>
+        </header>
         {trip.status === 'extracting' && trip.pipeline ? (
           <PipelineProgress pipeline={trip.pipeline} />
         ) : (
-          <p className="text-muted">
-            Places show up here once the host starts finding them from the squad's Reels.
-          </p>
+          <CollectPlaces />
         )}
+        <section>
+          <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
+            On the list · {places.length}
+          </h2>
+          {places.length === 0 ? (
+            <p className="text-muted">Nothing yet. Places you add show up here.</p>
+          ) : (
+            <ul className="space-y-3">
+              {sorted.map((place) => (
+                <PlaceCard key={place.id} place={place} vote={undefined} mode="collect" />
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     )
   }
@@ -43,7 +62,7 @@ export function Places() {
       <header>
         <h1 className="text-2xl font-extrabold tracking-tight">Places & vote</h1>
         <p className="mt-1 text-muted">
-          Every place here was found in your Reels and checked on Google Maps.
+          Every place here is checked on Google Maps.
           {voting && ' Vote on each one, then submit.'}
         </p>
       </header>
@@ -61,8 +80,7 @@ export function Places() {
               key={place.id}
               place={place}
               vote={me?.votes[place.id]}
-              canVote={canVote}
-              showTally={!voting}
+              mode={!voting ? 'results' : canVote ? 'vote' : 'voted'}
             />
           ))}
         </ul>
@@ -86,13 +104,11 @@ export function Places() {
 function PlaceCard({
   place,
   vote,
-  canVote,
-  showTally,
+  mode,
 }: {
   place: WithId<Place>
   vote: Vote | undefined
-  canVote: boolean
-  showTally: boolean
+  mode: 'collect' | 'vote' | 'voted' | 'results'
 }) {
   const trip = useTrip()
   const { me, byId } = useSquad()
@@ -114,13 +130,20 @@ function PlaceCard({
           )}
         </div>
         <p className="text-sm text-muted">
-          {categoryLabel[place.category] ?? 'Place'} · saved by {savedByNames(place, byId)}
+          {categoryLabel[place.category] ?? 'Place'} · {placeOrigin(place, byId)}
         </p>
-        {place.summary.highlights[0] && <p className="text-sm">{place.summary.highlights[0]}</p>}
+        {place.summaryPending ? (
+          <p className="text-sm text-muted">Writing a summary…</p>
+        ) : (
+          place.summary.highlights[0] && <p className="text-sm">{place.summary.highlights[0]}</p>
+        )}
+        {place.suggestion && mode === 'collect' && (
+          <p className="text-sm text-muted">Why the AI picked it: {place.suggestion.reason}</p>
+        )}
         <p className="text-sm font-semibold text-lagoon">Details</p>
       </Link>
 
-      {showTally ? (
+      {mode === 'collect' ? null : mode === 'results' ? (
         <p className="text-sm text-muted tabular-nums">
           {place.tally.must} must go · {place.tally.maybe} maybe · {place.tally.skip} skip
         </p>
@@ -136,7 +159,7 @@ function PlaceCard({
               type="button"
               role="radio"
               aria-checked={vote === option.value}
-              disabled={!canVote}
+              disabled={mode !== 'vote'}
               onClick={() => cast(option.value)}
               className={`min-h-11 rounded-xl border text-sm font-semibold transition disabled:cursor-not-allowed ${
                 vote === option.value

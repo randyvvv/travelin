@@ -65,8 +65,8 @@ export function Reels() {
       <header>
         <h1 className="text-2xl font-extrabold tracking-tight">Reels</h1>
         <p className="mt-1 text-muted">
-          Add the travel Reels your squad keeps sharing. The AI watches each video and pulls out the
-          places in it.
+          Optional. Add the travel Reels your squad keeps sharing, and the AI watches each video for
+          places. You can also search for places or ask for AI suggestions on the Places page.
         </p>
       </header>
 

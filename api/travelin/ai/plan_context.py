@@ -123,6 +123,11 @@ def build_context(
                 "savedBy": [
                     member_alias[uid] for uid in place.get("savedBy", []) if uid in member_alias
                 ],
+                **(
+                    {"suggestedBecause": place["suggestion"]["reason"]}
+                    if place.get("suggestion")
+                    else {}
+                ),
             }
         )
 

@@ -45,6 +45,13 @@ export function savedByNames(place: Place, byId: Map<string, WithId<Member>>): s
   )
 }
 
+/** Where a place came from, for the card: "saved by Hana and Raka", "suggested by AI". */
+export function placeOrigin(place: Place, byId: Map<string, WithId<Member>>): string {
+  if (place.savedBy.length > 0) return `saved by ${savedByNames(place, byId)}`
+  if (place.suggestion) return 'suggested by AI'
+  return 'on the list'
+}
+
 /** Most-saved first during voting; most-wanted first once votes are in. */
 export function sortPlaces(places: WithId<Place>[], byVotes: boolean): WithId<Place>[] {
   const score = (place: Place) =>
