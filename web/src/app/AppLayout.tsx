@@ -2,11 +2,14 @@ import { collection, query, where } from 'firebase/firestore'
 import { Bell, CalendarDays, Clock3, House, UserRound } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { IconLink } from '../components/ui'
+import { BackBar, IconLink } from '../components/ui'
+import { backHref, backLabel } from '../lib/back'
 import { db } from '../lib/firebase'
 import { useCollection } from '../lib/hooks/useCollection'
 import type { AppNotification } from '../lib/types'
 import { useAuth } from './auth-context'
+
+const HEADER_PATHS = new Set(['/', '/trips', '/trips/history', '/profile'])
 
 export function AppLayout() {
   const { user } = useAuth()
@@ -23,6 +26,9 @@ export function AppLayout() {
     pathname === '/trips' ||
     pathname === '/trips/new' ||
     (pathname.startsWith('/trips/') && !pathname.startsWith('/trips/history'))
+  const showHeader = HEADER_PATHS.has(pathname)
+  const backTo = backHref(pathname)
+  const tripShell = /^\/trips\/(?!history$|new$)[^/]+/.test(pathname)
   const navLinkClass = (isActive: boolean) =>
     `flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[0.6875rem] font-semibold transition focus-visible:outline-2 focus-visible:outline-lagoon ${
       isActive ? 'text-lagoon-dark' : 'text-muted hover:bg-paper hover:text-ink'
@@ -30,38 +36,45 @@ export function AppLayout() {
 
   return (
     <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
-        {pathname === '/' ? (
-          <Link
-            to="/"
-            className="flex min-h-11 items-center gap-2.5 text-lg font-bold tracking-tight"
-          >
-            <img src="/logo.svg" alt="" className="size-9" />
-            Travelin
-          </Link>
-        ) : (
-          <Link
-            to="/"
-            className="flex min-h-11 items-center gap-2 text-base font-bold tracking-tight"
-          >
-            <img src="/logo.svg" alt="" className="size-8" />
-            Travelin
-          </Link>
-        )}
-        <IconLink
-          to="/notifications"
-          label={`Notifications, ${unread.length} unread`}
-          className="relative"
-        >
-          <Bell size={21} strokeWidth={1.9} aria-hidden="true" />
-          {unread.length > 0 && (
-            <span className="absolute top-1 right-1 min-w-5 rounded-full bg-sunset px-1 text-center text-[0.6875rem] leading-5 font-bold text-ink ring-2 ring-paper">
-              {unread.length}
-            </span>
+      {showHeader && (
+        <header className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
+          {pathname === '/' ? (
+            <Link
+              to="/"
+              className="flex min-h-11 items-center gap-2.5 text-lg font-bold tracking-tight"
+            >
+              <img src="/travelin%20icon.png" alt="" className="size-9" />
+              Travelin
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="flex min-h-11 items-center gap-2 text-base font-bold tracking-tight"
+            >
+              <img src="/travelin%20icon.png" alt="" className="size-8" />
+              Travelin
+            </Link>
           )}
-        </IconLink>
-      </header>
-      <main className="relative z-10 flex-1 px-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)]">
+          <IconLink
+            to="/notifications"
+            label={`Notifications, ${unread.length} unread`}
+            className="relative"
+          >
+            <Bell size={21} strokeWidth={1.9} aria-hidden="true" />
+            {unread.length > 0 && (
+              <span className="absolute top-1 right-1 min-w-5 rounded-full bg-sunset px-1 text-center text-[0.6875rem] leading-5 font-bold text-ink ring-2 ring-paper">
+                {unread.length}
+              </span>
+            )}
+          </IconLink>
+        </header>
+      )}
+      <main
+        className={`relative z-10 flex-1 px-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] ${
+          showHeader ? '' : 'pt-[max(env(safe-area-inset-top),1rem)]'
+        }`}
+      >
+        {backTo && !tripShell && <BackBar to={backTo} label={backLabel(pathname)} />}
         <Outlet />
       </main>
       <nav

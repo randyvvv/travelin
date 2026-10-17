@@ -142,7 +142,7 @@ function TripSection({
               ) : (
                 row
               )}
-              {isReels && (
+              {isReels && highlightReels && (
                 <span className="trip-reels-featured rounded-full bg-sunset/20 px-2 py-0.5 text-[0.65rem] leading-4 font-bold text-ink">
                   Featured
                 </span>

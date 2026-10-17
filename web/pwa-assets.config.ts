@@ -9,5 +9,5 @@ export default defineConfig({
     maskable: { ...minimal2023Preset.maskable, resizeOptions: brandBackground },
     apple: { ...minimal2023Preset.apple, resizeOptions: brandBackground },
   },
-  images: ['public/logo.svg'],
+  images: ['public/travelin icon.png'],
 })

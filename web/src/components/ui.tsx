@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Link, type LinkProps } from 'react-router'
-import { Info, X } from 'lucide-react'
+import { ArrowLeft, Info, X } from 'lucide-react'
 import { buttonClass, cardClass, iconButtonClass, type ButtonVariant } from './styles'
 
 export function PageHeading({
@@ -154,6 +154,25 @@ export function IconButton({
     >
       {children}
     </button>
+  )
+}
+
+export function BackBar({
+  to,
+  label = 'Back',
+  children,
+}: {
+  to: string
+  label?: string
+  children?: ReactNode
+}) {
+  return (
+    <header className="mb-3 flex min-h-12 items-center gap-2 border-b border-line/70 pb-2">
+      <IconLink to={to} label={label} className="-ml-2">
+        <ArrowLeft size={21} strokeWidth={1.9} aria-hidden="true" />
+      </IconLink>
+      {children}
+    </header>
   )
 }
 

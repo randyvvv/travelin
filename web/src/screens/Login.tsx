@@ -35,7 +35,7 @@ export function Login() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),2.5rem)] pb-[max(env(safe-area-inset-bottom),2.5rem)]">
       <div className="flex items-center gap-2 text-lg font-extrabold tracking-tight">
-        <img src="/logo.svg" alt="" className="size-9" />
+        <img src="/travelin%20icon.png" alt="" className="size-9" />
         Travelin
       </div>
 
