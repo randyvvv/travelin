@@ -1,5 +1,5 @@
 import { collection, doc, orderBy, query } from 'firebase/firestore'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { DayMap, type MapPoint } from '../../components/DayMap'
@@ -54,10 +54,32 @@ function PlannedItinerary({ tripId }: { tripId: string }) {
     () =>
       (day?.stops ?? []).flatMap((stop) => {
         const place = placesById.get(stop.placeId)
-        return place ? [{ key: stop.placeId, title: place.name, ...place.location }] : []
+        if (!place) return []
+        const cost =
+          stop.estCostPerPersonIdr > 0
+            ? `About ${formatIdr(stop.estCostPerPersonIdr)} per person`
+            : 'Free'
+        return [
+          {
+            key: stop.placeId,
+            title: place.name,
+            subtitle: `${stop.start}–${stop.end} · ${cost}`,
+            href: `../places/${place.id}`,
+            ...place.location,
+          },
+        ]
       }),
     [day, placesById],
   )
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  useEffect(() => {
+    tabRefs.current[selected]?.scrollIntoView({
+      inline: 'nearest',
+      block: 'nearest',
+      behavior: 'smooth',
+    })
+  }, [selected])
 
   if (loading) return <Splash />
   const myEstimate = plan?.estimates.find((estimate) => estimate.uid === me?.id)
@@ -76,10 +98,17 @@ function PlannedItinerary({ tripId }: { tripId: string }) {
         }
       />
 
-      <div role="tablist" aria-label="Trip days" className="flex gap-2 overflow-x-auto pb-1">
+      <div
+        role="tablist"
+        aria-label="Trip days"
+        className="day-tabs flex gap-2 overflow-x-auto pt-2 pb-2"
+      >
         {days.map((item, index) => (
           <button
             key={item.id}
+            ref={(node) => {
+              tabRefs.current[index] = node
+            }}
             type="button"
             role="tab"
             aria-selected={item === day}

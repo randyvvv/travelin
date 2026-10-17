@@ -347,12 +347,7 @@
   z-index: 2;
   width: 24%;
   height: 270%;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgb(255 255 255 / 78%) 50%,
-    transparent
-  );
+  background: linear-gradient(180deg, transparent, rgb(255 255 255 / 78%) 50%, transparent);
   content: '';
   opacity: 0;
   pointer-events: none;
@@ -1034,5 +1029,150 @@
   .bottom-sheet-dialog[open]::backdrop,
   .bottom-sheet-dialog[open].bottom-sheet-dialog--closing::backdrop {
     animation-duration: 1ms;
+  }
+}
+
+.day-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-ink) 18%, transparent) transparent;
+}
+
+.day-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.day-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.day-tabs::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 18%, transparent);
+}
+
+.day-map-marker {
+  animation: day-map-marker-pop 250ms ease-out both;
+}
+
+@keyframes day-map-marker-pop {
+  0% {
+    transform: translateY(6px) scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(-2px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-map-marker {
+    animation: none;
+  }
+}
+
+.day-map-info {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-card) 35%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-card) 20%, transparent);
+  box-shadow: 0 8px 24px rgb(27 27 31 / 10%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.day-map-info--in {
+  animation: day-map-info-in 220ms ease-out both;
+}
+
+.day-map-info--out {
+  animation: day-map-info-out 180ms ease-in both;
+}
+
+@keyframes day-map-info-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes day-map-info-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-map-info--in,
+  .day-map-info--out {
+    animation-duration: 1ms;
+  }
+}
+
+.login-globe-stage {
+  overflow: visible;
+}
+
+.login-globe {
+  display: block;
+  max-width: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.login-globe--dragging {
+  cursor: grabbing;
+}
+
+.login-globe-label {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  bottom: anchor(top);
+  left: anchor(center);
+  translate: -50% 0;
+  margin-bottom: 2px;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.login-globe-label[data-visible='true'] {
+  opacity: 1;
+}
+
+.login-globe-label__name {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.login-globe-label__stem {
+  width: 1px;
+  height: 0.7rem;
+  background: var(--color-ink);
+}
+
+@supports not (anchor-name: --cobe) {
+  .login-globe-label {
+    display: none;
   }
 }
