@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useAuth } from '../app/auth-context'
 import { TripList } from '../components/TripList'
-import { ActionLink, PageHeading } from '../components/ui'
+import { ActionLink, FeaturedHighlight, PageHeading } from '../components/ui'
 import { useTrips } from '../lib/hooks/useTrips'
 
 export function Home() {
@@ -18,10 +18,12 @@ export function Home() {
           eyebrow={`Hi ${user?.displayName?.split(' ')[0] ?? 'there'}`}
           title="Where's the squad going next?"
         />
-        <ActionLink to="/trips/new" className="mt-5 w-full">
-          <Plus size={19} strokeWidth={2.1} aria-hidden="true" />
-          Create a trip
-        </ActionLink>
+        <FeaturedHighlight className="featured-highlight--action mt-5">
+          <ActionLink to="/trips/new" className="w-full">
+            <Plus size={19} strokeWidth={2.1} aria-hidden="true" />
+            Create a trip
+          </ActionLink>
+        </FeaturedHighlight>
       </section>
 
       <TripList

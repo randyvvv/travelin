@@ -76,7 +76,7 @@ export function Notifications() {
               >
                 <span
                   aria-hidden
-                  className={`mt-2 size-2 shrink-0 rounded-full ${notification.read ? 'bg-transparent' : 'bg-sunset'}`}
+                  className={`mt-2 size-2 shrink-0 rounded-full ${notification.read ? 'bg-transparent' : 'bg-sunset ring-4 ring-sunset/15'}`}
                 />
                 <span className="min-w-0 flex-1">
                   <span className={`block ${notification.read ? '' : 'font-semibold'}`}>

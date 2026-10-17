@@ -6,6 +6,7 @@ import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { DroppedPlaces, PipelineProgress } from '../../components/Pipeline'
 import { buttonClass } from '../../components/styles'
+import { FeaturedHighlight } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
@@ -31,18 +32,20 @@ export function NextStep() {
     case 'voting': {
       const voted = members.filter((member) => member.votesSubmittedAt != null).length
       return (
-        <section className="space-y-3 surface-card p-4">
-          <h2 className="font-bold">Voting is open</h2>
-          <p className="text-sm text-muted tabular-nums">
-            {voted} of {members.length} have submitted their votes.
-          </p>
-          {trip.planning?.stage === 'failed' && (
-            <ErrorText>{trip.planning.error ?? null}</ErrorText>
-          )}
-          <Link to="places" className={`${buttonClass('primary')} w-full`}>
-            Vote on places
-          </Link>
-        </section>
+        <FeaturedHighlight>
+          <section className="space-y-3 surface-card p-4">
+            <h2 className="font-bold">Voting is open</h2>
+            <p className="text-sm text-muted tabular-nums">
+              {voted} of {members.length} have submitted their votes.
+            </p>
+            {trip.planning?.stage === 'failed' && (
+              <ErrorText>{trip.planning.error ?? null}</ErrorText>
+            )}
+            <Link to="places" className={`${buttonClass('primary')} w-full`}>
+              Vote on places
+            </Link>
+          </section>
+        </FeaturedHighlight>
       )
     }
     case 'planning': {
@@ -61,48 +64,54 @@ export function NextStep() {
     }
     case 'planned':
       return (
-        <section className="space-y-3 surface-card p-4">
-          <h2 className="font-bold">Your itinerary is ready</h2>
-          <p className="text-sm text-muted">
-            See the plan for each day. During the trip, log who paid for what in Split bill.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Link to="itinerary" className={buttonClass('primary')}>
-              Itinerary
-            </Link>
-            <Link to="split" className={buttonClass('outline')}>
-              Split bill
-            </Link>
-          </div>
-        </section>
+        <FeaturedHighlight>
+          <section className="space-y-3 surface-card p-4">
+            <h2 className="font-bold">Your itinerary is ready</h2>
+            <p className="text-sm text-muted">
+              See the plan for each day. During the trip, log who paid for what in Split bill.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="itinerary" className={buttonClass('primary')}>
+                Itinerary
+              </Link>
+              <Link to="split" className={buttonClass('outline')}>
+                Split bill
+              </Link>
+            </div>
+          </section>
+        </FeaturedHighlight>
       )
     case 'splitting': {
       const approved = members.filter(
         (member) => member.splitApprovedVersion === trip.split.version,
       ).length
       return (
-        <section className="space-y-3 surface-card p-4">
-          <h2 className="font-bold">Approve the split</h2>
-          <p className="text-sm text-muted tabular-nums">
-            {approved} of {members.length} have approved. Payments start once everyone agrees.
-          </p>
-          <Link to="split" className={`${buttonClass('primary')} w-full`}>
-            Review the split
-          </Link>
-        </section>
+        <FeaturedHighlight>
+          <section className="space-y-3 surface-card p-4">
+            <h2 className="font-bold">Approve the split</h2>
+            <p className="text-sm text-muted tabular-nums">
+              {approved} of {members.length} have approved. Payments start once everyone agrees.
+            </p>
+            <Link to="split" className={`${buttonClass('primary')} w-full`}>
+              Review the split
+            </Link>
+          </section>
+        </FeaturedHighlight>
       )
     }
     case 'settling':
       return (
-        <section className="space-y-3 surface-card p-4">
-          <h2 className="font-bold">Settle up</h2>
-          <p className="text-sm text-muted">
-            Everyone approved. Pay the people you owe and confirm what you receive.
-          </p>
-          <Link to="pay" className={`${buttonClass('primary')} w-full`}>
-            Go to payments
-          </Link>
-        </section>
+        <FeaturedHighlight>
+          <section className="space-y-3 surface-card p-4">
+            <h2 className="font-bold">Settle up</h2>
+            <p className="text-sm text-muted">
+              Everyone approved. Pay the people you owe and confirm what you receive.
+            </p>
+            <Link to="pay" className={`${buttonClass('primary')} w-full`}>
+              Go to payments
+            </Link>
+          </section>
+        </FeaturedHighlight>
       )
     case 'settled':
       return (
@@ -145,7 +154,7 @@ function FindPlaces() {
     }
   }
 
-  return (
+  const content = (
     <section className="space-y-3 surface-card p-4">
       <h2 className="font-bold">Build the list, then vote</h2>
       <p className="text-sm text-muted">
@@ -198,4 +207,6 @@ function FindPlaces() {
       )}
     </section>
   )
+
+  return isHost && ready ? <FeaturedHighlight>{content}</FeaturedHighlight> : content
 }

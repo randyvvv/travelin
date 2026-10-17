@@ -26,6 +26,22 @@
   body {
     @apply bg-paper font-sans text-ink antialiased;
     min-width: 320px;
+    background-color: var(--color-paper);
+    background-image:
+      radial-gradient(
+        ellipse 31rem 23rem at calc(50% + clamp(4.5rem, 34vw, 14rem)) 0%,
+        color-mix(in srgb, var(--color-sunset) 42%, transparent) 0%,
+        color-mix(in srgb, var(--color-sunset) 30%, transparent) 27%,
+        color-mix(in srgb, var(--color-sunset) 12%, transparent) 58%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 32rem 21rem at calc(50% - clamp(2.25rem, 14vw, 6rem)) -3rem,
+        color-mix(in srgb, var(--color-sunset) 8%, transparent) 0%,
+        color-mix(in srgb, var(--color-sunset) 4%, transparent) 45%,
+        transparent 100%
+      );
+    background-repeat: no-repeat;
   }
 
   button,
@@ -71,7 +87,14 @@
     border: 1px solid var(--color-line);
     border-radius: 1.25rem;
     background: var(--color-card);
-    box-shadow: 0 5px 18px rgb(27 27 31 / 4%);
+    background-image: radial-gradient(
+      ellipse 135% 10rem at 0% 0%,
+      color-mix(in srgb, var(--color-sunset) 7%, transparent),
+      transparent 78%
+    );
+    box-shadow:
+      0 5px 18px rgb(27 27 31 / 4%),
+      inset 0 1px 0 color-mix(in srgb, var(--color-sunset) 11%, transparent);
   }
 
   .list-surface {
@@ -79,7 +102,14 @@
     border: 1px solid var(--color-line);
     border-radius: 1.25rem;
     background: var(--color-card);
-    box-shadow: 0 5px 18px rgb(27 27 31 / 4%);
+    background-image: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-sunset) 6%, transparent),
+      transparent 42%
+    );
+    box-shadow:
+      0 5px 18px rgb(27 27 31 / 4%),
+      inset 0 1px 0 color-mix(in srgb, var(--color-sunset) 10%, transparent);
   }
 
   .list-row {
@@ -94,6 +124,67 @@
 
   .list-row:hover {
     background: var(--color-paper);
+  }
+}
+
+@property --featured-highlight-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.featured-highlight {
+  --featured-highlight-angle: 0deg;
+
+  position: relative;
+  isolation: isolate;
+  display: block;
+  border: 2px solid transparent;
+  border-radius: 1.375rem;
+  background: conic-gradient(
+      from var(--featured-highlight-angle),
+      var(--color-sunset),
+      color-mix(in srgb, var(--color-sunset) 62%, var(--color-card)) 18deg,
+      color-mix(in srgb, var(--color-sunset) 12%, var(--color-card)) 62deg,
+      transparent 112deg,
+      color-mix(in srgb, var(--color-sunset) 12%, var(--color-card)) 190deg,
+      color-mix(in srgb, var(--color-sunset) 72%, var(--color-card)) 232deg,
+      var(--color-sunset) 258deg,
+      color-mix(in srgb, var(--color-sunset) 15%, transparent) 314deg,
+      transparent 344deg,
+      var(--color-sunset) 360deg
+    )
+    border-box;
+  animation: featured-highlight-sweep 6.5s linear infinite;
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--color-sunset) 14%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-card) 80%, transparent) inset;
+  transition: box-shadow 180ms ease;
+}
+
+.featured-highlight--action {
+  border-radius: 0.875rem;
+}
+
+.featured-highlight:hover,
+.featured-highlight:focus-within {
+  box-shadow:
+    0 10px 28px color-mix(in srgb, var(--color-sunset) 22%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-card) 80%, transparent) inset;
+}
+
+@keyframes featured-highlight-sweep {
+  to {
+    --featured-highlight-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-highlight {
+    --featured-highlight-angle: 32deg;
+
+    animation: none;
+    transition: none;
   }
 }
 

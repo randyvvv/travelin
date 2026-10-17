@@ -57,6 +57,16 @@ export function SurfaceCard({ children, className = '', ...props }: HTMLAttribut
   )
 }
 
+export function FeaturedHighlight({
+  children,
+  className = '',
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return <div className={`featured-highlight ${className}`}>{children}</div>
+}
+
 export function StatusBadge({
   children,
   tone = 'neutral',
@@ -69,7 +79,7 @@ export function StatusBadge({
   const toneClass = {
     neutral: 'bg-paper text-muted',
     brand: 'bg-lagoon/10 text-lagoon-dark',
-    warm: 'bg-sunset/25 text-ink',
+    warm: 'bg-sunset/20 text-ink ring-1 ring-inset ring-sunset/45',
     success: 'bg-lagoon/15 text-lagoon-dark',
     danger: 'bg-red-100 text-red-800',
   }[tone]

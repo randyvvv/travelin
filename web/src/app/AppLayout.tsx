@@ -1,5 +1,5 @@
 import { collection, query, where } from 'firebase/firestore'
-import { ArrowLeft, Bell, CalendarDays, Clock3, House, UserRound } from 'lucide-react'
+import { Bell, CalendarDays, Clock3, House, UserRound } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { IconLink } from '../components/ui'
@@ -29,8 +29,8 @@ export function AppLayout() {
     }`
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="flex items-center justify-between gap-3 px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
+    <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      <header className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
         {pathname === '/' ? (
           <Link
             to="/"
@@ -40,18 +40,13 @@ export function AppLayout() {
             Travelin
           </Link>
         ) : (
-          <div className="flex min-w-0 items-center gap-2">
-            <IconLink to="/" label="Back to home" className="-ml-2">
-              <ArrowLeft size={21} strokeWidth={1.9} aria-hidden="true" />
-            </IconLink>
-            <Link
-              to="/"
-              className="flex min-h-11 items-center gap-2 text-base font-bold tracking-tight"
-            >
-              <img src="/logo.svg" alt="" className="size-8" />
-              Travelin
-            </Link>
-          </div>
+          <Link
+            to="/"
+            className="flex min-h-11 items-center gap-2 text-base font-bold tracking-tight"
+          >
+            <img src="/logo.svg" alt="" className="size-8" />
+            Travelin
+          </Link>
         )}
         <IconLink
           to="/notifications"
@@ -66,7 +61,7 @@ export function AppLayout() {
           )}
         </IconLink>
       </header>
-      <main className="flex-1 px-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)]">
+      <main className="relative z-10 flex-1 px-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)]">
         <Outlet />
       </main>
       <nav
