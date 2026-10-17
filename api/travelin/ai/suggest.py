@@ -85,10 +85,16 @@ async def _suggest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference)
     ]
     places_ref = trip_ref.collection("places")
     existing = {snapshot.id: snapshot.get("name") async for snapshot in places_ref.stream()}
+    suggestions_ref = trip_ref.collection("suggestions")
+    saved_suggestions = {
+        snapshot.id: snapshot.get("name") async for snapshot in suggestions_ref.stream()
+    }
+    known_ids = set(existing) | set(saved_suggestions)
+    known_names = [*existing.values(), *saved_suggestions.values()]
 
     await _stage(trip_ref, "thinking")
     suggestions = await suggester.suggest(
-        {**trip, "destination": destination}, members, list(existing.values())
+        {**trip, "destination": destination}, members, known_names
     )
 
     jobs = [
@@ -110,7 +116,7 @@ async def _suggest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference)
     fresh: dict[str, dict[str, Any]] = {}
     for outcome in await ctx.run_node(verify_candidate, jobs):
         place = outcome.get("place")
-        if place and place["place_id"] not in existing:
+        if place and place["place_id"] not in known_ids:
             fresh.setdefault(place["place_id"], outcome)
 
     await _stage(trip_ref, "summarizing", len(fresh))
@@ -133,16 +139,17 @@ async def _suggest(ctx: Context, trip_id: str, trip_ref: AsyncDocumentReference)
         category = outcome["category"]
         if category == "other":
             category = category_from_types(place.types)
-        batch.set(
-            places_ref.document(place.place_id),
-            place_document(
-                place,
-                category,
-                summary["summary"],
-                summary["sources"],
-                suggestion={"reason": outcome["reason"]},
-            ),
+        suggestion = place_document(
+            place,
+            category,
+            summary["summary"],
+            summary["sources"],
+            suggestion={"reason": outcome["reason"]},
         )
+        # Google photo references can expire and must not be cached.
+        suggestion.pop("photoName", None)
+        suggestion["createdAt"] = SERVER_TIMESTAMP
+        batch.set(suggestions_ref.document(place.place_id), suggestion)
     batch.update(
         trip_ref,
         {

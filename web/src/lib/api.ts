@@ -14,6 +14,7 @@ export class ApiError extends Error {
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
   body?: unknown
+  cache?: RequestCache
 }
 
 /** FastAPI sends a string for HTTPException and a list for validation errors. */
@@ -29,10 +30,11 @@ function describe(detail: unknown, fallback: string): string {
 }
 
 /** Calls travelin-api with the signed-in user's Firebase ID token. */
-export async function api<T>(path: string, { method, body }: ApiOptions = {}): Promise<T> {
+export async function api<T>(path: string, { method, body, cache }: ApiOptions = {}): Promise<T> {
   const token = await auth.currentUser?.getIdToken()
   const response = await fetch(`${baseUrl}${path}`, {
     method: method ?? (body === undefined ? 'GET' : 'POST'),
+    cache,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -101,4 +103,42 @@ export interface PlaceHit {
   userRatingCount: number | null
   category: string
   onBoard: boolean
+}
+
+export interface HomeIdea {
+  placeId: string
+  name: string
+  category: string
+  address: string
+  rating: number | null
+  userRatingCount: number | null
+  googleMapsUri: string
+  source: 'personal' | 'popular'
+}
+
+export interface HomeIdeasResponse {
+  state: 'ready' | 'generating' | 'failed'
+  dayKey: string
+  tripId: string | null
+  destination: string | null
+  tripStatus: string | null
+  ideas: HomeIdea[]
+}
+
+export interface PlaceAdded {
+  placeId: string
+  alreadyAdded: boolean
+}
+
+export interface PhotoAttribution {
+  displayName: string
+  uri?: string
+  photoUri?: string
+}
+
+export interface PlacePhoto {
+  photoUri: string | null
+  authorAttributions: PhotoAttribution[]
+  googleMapsUri: string | null
+  placeName?: string | null
 }

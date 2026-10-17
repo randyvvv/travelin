@@ -1,11 +1,28 @@
-import { useState, type FormEvent } from 'react'
+import { collection, orderBy, query } from 'firebase/firestore'
+import { useMemo, useState, type FormEvent } from 'react'
+import { Check, ChevronDown, Plus } from 'lucide-react'
 import { useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { buttonClass, inputClass } from '../../components/styles'
 import { api, errorMessage, type PlaceHit } from '../../lib/api'
+import { db } from '../../lib/firebase'
+import { useCollection } from '../../lib/hooks/useCollection'
 import { categoryLabel } from '../../lib/places'
+import type { Place, WithId } from '../../lib/types'
 
 const SUGGESTING = new Set(['starting', 'thinking', 'verifying', 'summarizing'])
+const suggestionCategoryLabel: Record<string, string> = {
+  food: 'Food',
+  cafe: 'Café',
+  attraction: 'Attraction',
+  nature: 'Nature',
+  beach: 'Beach',
+  stay: 'Stay',
+  nightlife: 'Nightlife',
+  shopping: 'Shopping',
+  activity: 'Activity',
+  other: 'Place',
+}
 const suggestStage: Record<string, string> = {
   starting: 'Getting started',
   thinking: "Looking for places that fit everyone's preferences",
@@ -14,11 +31,11 @@ const suggestStage: Record<string, string> = {
 }
 
 /** The two ways to add places without Reels: search Google Maps, or ask the AI. */
-export function CollectPlaces() {
+export function CollectPlaces({ places }: { places: WithId<Place>[] }) {
   return (
     <div className="space-y-4">
       <SearchPlaces />
-      <SuggestPlaces />
+      <SuggestPlaces places={places} />
     </div>
   )
 }
@@ -121,16 +138,25 @@ function SearchPlaces() {
   )
 }
 
-function SuggestPlaces() {
+function SuggestPlaces({ places }: { places: WithId<Place>[] }) {
   const trip = useTrip()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [addError, setAddError] = useState<string | null>(null)
+  const [addingId, setAddingId] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState(false)
+  const suggestionsQuery = useMemo(
+    () => query(collection(db, 'trips', trip.id, 'suggestions'), orderBy('createdAt')),
+    [trip.id],
+  )
+  const { data: suggestions } = useCollection<Place>(suggestionsQuery)
   const state = trip.suggesting
   const active = state !== undefined && SUGGESTING.has(state.stage)
 
   async function suggest() {
     setBusy(true)
     setError(null)
+    setCollapsed(false)
     try {
       await api(`/v1/trips/${trip.id}/places:suggest`, { method: 'POST' })
     } catch (err) {
@@ -139,6 +165,20 @@ function SuggestPlaces() {
       setBusy(false)
     }
   }
+
+  async function addSuggestion(place: WithId<Place>) {
+    setAddingId(place.id)
+    setAddError(null)
+    try {
+      await api(`/v1/trips/${trip.id}/places`, { body: { placeId: place.id } })
+    } catch (err) {
+      setAddError(errorMessage(err, "Couldn't add that place. Please try again."))
+    } finally {
+      setAddingId(null)
+    }
+  }
+
+  const expanded = suggestions.length > 0 && !collapsed
 
   return (
     <section className="space-y-3 surface-card p-4">
@@ -165,7 +205,7 @@ function SuggestPlaces() {
         <>
           {state?.stage === 'done' && (
             <p role="status" className="text-sm font-semibold text-lagoon-dark">
-              Added {state.added} {state.added === 1 ? 'suggestion' : 'suggestions'} below.
+              Saved {state.added} {state.added === 1 ? 'suggestion' : 'suggestions'} below.
             </p>
           )}
           <ErrorText>
@@ -180,6 +220,73 @@ function SuggestPlaces() {
             {busy ? 'Asking…' : state?.stage === 'done' ? 'Suggest more places' : 'Suggest places'}
           </button>
         </>
+      )}
+      {suggestions.length > 0 && (
+        <div className="border-t border-line pt-3">
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setCollapsed((value) => !value)}
+            className="flex min-h-11 w-full items-center justify-between gap-3 text-left"
+          >
+            <span className="font-bold">AI suggestions · {suggestions.length}</span>
+            <ChevronDown
+              size={19}
+              className={`shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+          {expanded && (
+            <ul className="place-suggestion-carousel" aria-label="AI place suggestions">
+              {suggestions.map((place) => {
+                const isAdded = places.some((item) => item.id === place.id)
+                return (
+                  <li key={place.id} className="place-suggestion-carousel__item">
+                    <article className="place-suggestion-card">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="dashboard-overline">
+                          {suggestionCategoryLabel[place.category] ?? 'Place'}
+                        </span>
+                        {place.rating != null && (
+                          <span className="text-xs font-semibold tabular-nums">
+                            ★ {place.rating.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="mt-2 line-clamp-2 min-h-[2.75rem] font-bold leading-snug">
+                        {place.name}
+                      </h3>
+                      {place.suggestion?.reason && (
+                        <p className="dashboard-idea-reason min-h-[2.2rem]">
+                          {place.suggestion.reason}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        disabled={isAdded || addingId !== null}
+                        onClick={() => void addSuggestion(place)}
+                        className={`${buttonClass(isAdded ? 'outline' : 'primary')} mt-3 w-full`}
+                      >
+                        {isAdded ? (
+                          <>
+                            <Check size={16} aria-hidden="true" /> Added
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={17} aria-hidden="true" />
+                            {addingId === place.id ? 'Adding…' : 'Add to List'}
+                          </>
+                        )}
+                      </button>
+                    </article>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          <ErrorText>{addError}</ErrorText>
+          <p className="mt-1 text-center text-xs text-muted">Swipe to explore</p>
+        </div>
       )}
     </section>
   )

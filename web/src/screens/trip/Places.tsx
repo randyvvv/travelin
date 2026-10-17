@@ -1,12 +1,12 @@
 import { collection, doc, query, updateDoc } from 'firebase/firestore'
 import { useMemo, useState } from 'react'
-import { Check, Star } from 'lucide-react'
+import { Check, Star, Trash2 } from 'lucide-react'
 import { Link } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { DroppedPlaces, PipelineProgress } from '../../components/Pipeline'
 import { buttonClass } from '../../components/styles'
-import { PageHeading, SectionHeading } from '../../components/ui'
+import { ActionButton, BottomSheet, PageHeading, SectionHeading } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
@@ -20,11 +20,30 @@ export function Places() {
   const { me, members } = useSquad()
   const placesQuery = useMemo(() => query(collection(db, 'trips', trip.id, 'places')), [trip.id])
   const { data: places, loading } = useCollection<Place>(placesQuery)
+  const [removeTarget, setRemoveTarget] = useState<WithId<Place> | null>(null)
+  const [removeBusy, setRemoveBusy] = useState(false)
+  const [removeError, setRemoveError] = useState<string | null>(null)
 
   const voting = trip.status === 'voting'
   const submitted = me?.votesSubmittedAt != null
   const canVote = voting && !submitted
   const sorted = sortPlaces(places, !voting)
+
+  async function removePlace() {
+    if (!removeTarget) return
+    setRemoveBusy(true)
+    setRemoveError(null)
+    try {
+      await api<void>(`/v1/trips/${trip.id}/places/${encodeURIComponent(removeTarget.id)}`, {
+        method: 'DELETE',
+      })
+      setRemoveTarget(null)
+    } catch (err) {
+      setRemoveError(errorMessage(err, "Couldn't remove this place. Please try again."))
+    } finally {
+      setRemoveBusy(false)
+    }
+  }
 
   if (trip.status === 'gathering' || trip.status === 'extracting') {
     return (
@@ -36,7 +55,7 @@ export function Places() {
         {trip.status === 'extracting' && trip.pipeline ? (
           <PipelineProgress pipeline={trip.pipeline} />
         ) : (
-          <CollectPlaces />
+          <CollectPlaces places={places} />
         )}
         <section>
           <SectionHeading title={`On the list · ${places.length}`} />
@@ -45,11 +64,60 @@ export function Places() {
           ) : (
             <ul className="space-y-3">
               {sorted.map((place) => (
-                <PlaceCard key={place.id} place={place} vote={undefined} mode="collect" />
+                <PlaceCard
+                  key={place.id}
+                  place={place}
+                  vote={undefined}
+                  mode="collect"
+                  onRemove={
+                    trip.status === 'gathering'
+                      ? () => {
+                          setRemoveError(null)
+                          setRemoveTarget(place)
+                        }
+                      : undefined
+                  }
+                />
               ))}
             </ul>
           )}
         </section>
+        <BottomSheet
+          open={removeTarget !== null}
+          title="Remove this place?"
+          description={
+            removeTarget
+              ? `Remove ${removeTarget.name} from the shared list? It can be added again later.`
+              : undefined
+          }
+          onClose={() => {
+            if (removeBusy) return
+            setRemoveTarget(null)
+            setRemoveError(null)
+          }}
+        >
+          <ErrorText>{removeError}</ErrorText>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <ActionButton
+              type="button"
+              variant="outline"
+              disabled={removeBusy}
+              onClick={() => setRemoveTarget(null)}
+            >
+              Cancel
+            </ActionButton>
+            <ActionButton
+              type="button"
+              variant="outline"
+              disabled={removeBusy}
+              onClick={() => void removePlace()}
+              className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50"
+            >
+              <Trash2 size={16} aria-hidden="true" />
+              {removeBusy ? 'Removing…' : 'Remove place'}
+            </ActionButton>
+          </div>
+        </BottomSheet>
       </div>
     )
   }
@@ -99,10 +167,12 @@ function PlaceCard({
   place,
   vote,
   mode,
+  onRemove,
 }: {
   place: WithId<Place>
   vote: Vote | undefined
   mode: 'collect' | 'vote' | 'voted' | 'results'
+  onRemove?: () => void
 }) {
   const trip = useTrip()
   const { me, byId } = useSquad()
@@ -138,7 +208,18 @@ function PlaceCard({
         <p className="text-sm font-semibold text-lagoon">Details</p>
       </Link>
 
-      {mode === 'collect' ? null : mode === 'results' ? (
+      {mode === 'collect' ? (
+        onRemove && (
+          <ActionButton
+            type="button"
+            variant="outline"
+            className="min-h-10 px-3 text-sm text-red-700"
+            onClick={onRemove}
+          >
+            <Trash2 size={15} aria-hidden="true" /> Remove
+          </ActionButton>
+        )
+      ) : mode === 'results' ? (
         <p className="text-sm text-muted tabular-nums">
           {place.tally.must} must go · {place.tally.maybe} maybe · {place.tally.skip} skip
         </p>

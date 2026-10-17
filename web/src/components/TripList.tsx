@@ -4,6 +4,7 @@ import { ListRow, SectionHeading, StatusBadge } from './ui'
 import { formatDateRange } from '../lib/format'
 import { paymentLabel, tripStatusLabel } from '../lib/status'
 import type { Trip, WithId } from '../lib/types'
+import type { ReactNode } from 'react'
 
 export function TripList({
   title,
@@ -12,6 +13,7 @@ export function TripList({
   loading,
   error,
   empty,
+  action,
 }: {
   title: string
   trips: WithId<Trip>[]
@@ -19,6 +21,7 @@ export function TripList({
   loading: boolean
   error?: string | null
   empty?: string
+  action?: ReactNode
 }) {
   const tripStatus = (trip: WithId<Trip>) =>
     (uid && trip.paymentStatus?.[uid] && paymentLabel[trip.paymentStatus[uid]]) ||
@@ -26,7 +29,7 @@ export function TripList({
 
   return (
     <section>
-      <SectionHeading title={title} />
+      <SectionHeading title={title} action={action} />
       {loading ? (
         <div className="h-20 animate-pulse rounded-2xl bg-line/60" aria-hidden="true" />
       ) : error ? (

@@ -7,12 +7,13 @@ from .auth import CurrentUser, User
 from .booking.mandates import travelin_key
 from .booking.signing import public_jwk
 from .config import get_settings
-from .routes import booking, expenses, ingest, places, planning, settlement, trips, voting
+from .routes import booking, expenses, home, ingest, places, planning, settlement, trips, voting
 
 app = FastAPI(title="Travelin API", version="0.1.0")
 app.include_router(trips.router)
 app.include_router(ingest.router)
 app.include_router(places.router)
+app.include_router(home.router)
 app.include_router(voting.router)
 app.include_router(planning.router)
 app.include_router(expenses.router)
