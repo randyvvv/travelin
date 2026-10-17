@@ -17,12 +17,13 @@ import {
 import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../app/auth-context'
 import { ErrorText } from '../components/ErrorText'
+import { CreateTripAction } from '../components/CreateTripAction'
 import { LazyPlacePhoto } from '../components/LazyPlacePhoto'
 import { TripList } from '../components/TripList'
 import {
   ActionButton,
   ActionLink,
-  BottomSheet,
+  Drawer,
   FeaturedHighlight,
   PageHeading,
   SectionHeading,
@@ -62,6 +63,7 @@ export function Home() {
     () => (uid ? deriveHomeTasks(activeTrips, activity.members, activity.transfers, uid) : []),
     [activeTrips, activity.members, activity.transfers, uid],
   )
+
   return (
     <div className="space-y-7 py-2 pb-3">
       <section className="dashboard-welcome">
@@ -69,18 +71,17 @@ export function Home() {
           eyebrow={`Hi ${user?.displayName?.split(' ')[0] ?? 'there'}`}
           title="Where's the squad going next?"
         />
-        <FeaturedHighlight className="featured-highlight--action mt-5">
-          <ActionLink to="/trips/new" className="w-full">
-            <Plus size={19} strokeWidth={2.1} aria-hidden="true" />
-            Create a trip
-          </ActionLink>
-        </FeaturedHighlight>
+        <CreateTripAction className="mt-5" />
       </section>
 
       {nextTrip && <NextTripCard trip={nextTrip} today={today} />}
 
       <section>
-        <SectionHeading title="What needs me" />
+        <SectionHeading
+          title="What needs me"
+          infoLabel="About What needs me"
+          infoDescription="A quick list of actions across your active trips that need your attention, like sending a payment, approving a split, voting before a deadline, or finishing your preferences. Completed actions disappear from the list."
+        />
         {loading || activity.loading ? (
           <TaskLoading />
         ) : error ? (
@@ -327,6 +328,8 @@ function IdeasSection({ uid, trips }: { uid: string | null; trips: WithId<Trip>[
     <section>
       <SectionHeading
         title={sectionTitle}
+        infoLabel="About Ideas for your plan"
+        infoDescription="Fresh place ideas are refreshed daily for your next plan collecting places, based on its destination and your squad’s preferences. Without one, we show popular places across Southeast Asia."
         action={
           result?.tripId ? (
             <Link
@@ -439,7 +442,7 @@ function IdeasSection({ uid, trips }: { uid: string | null; trips: WithId<Trip>[
       )}
       <p className="dashboard-carousel-hint">Swipe to explore</p>
 
-      <BottomSheet
+      <Drawer
         open={pickerIdea !== null}
         title="Add to a plan"
         description={pickerIdea ? `Choose where to add ${pickerIdea.name}.` : undefined}
@@ -483,15 +486,14 @@ function IdeasSection({ uid, trips }: { uid: string | null; trips: WithId<Trip>[
           </p>
         )}
         <ErrorText>{addError}</ErrorText>
-        <ActionButton
-          type="button"
-          variant="outline"
-          className="mt-3 w-full"
-          onClick={() => pickerIdea && createNewPlan(pickerIdea)}
-        >
-          <Plus size={17} aria-hidden="true" /> Create a new plan
-        </ActionButton>
-      </BottomSheet>
+        <CreateTripAction
+          label="Create a new plan"
+          showPlus={false}
+          compact
+          className="mt-3"
+          onActivate={() => pickerIdea && createNewPlan(pickerIdea)}
+        />
+      </Drawer>
     </section>
   )
 }

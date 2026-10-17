@@ -2,12 +2,13 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
   type ReactNode,
 } from 'react'
 import { Link, type LinkProps } from 'react-router'
-import { X } from 'lucide-react'
+import { Info, X } from 'lucide-react'
 import { buttonClass, cardClass, iconButtonClass, type ButtonVariant } from './styles'
 
 export function PageHeading({
@@ -35,16 +36,43 @@ export function PageHeading({
 export function SectionHeading({
   title,
   action,
+  infoDescription,
+  infoLabel = 'About this section',
   className = '',
 }: {
   title: ReactNode
   action?: ReactNode
+  infoDescription?: ReactNode
+  infoLabel?: string
   className?: string
 }) {
+  const [infoOpen, setInfoOpen] = useState(false)
+
   return (
-    <div className={`mb-3 flex items-center justify-between gap-3 ${className}`}>
-      <h2 className="section-title">{title}</h2>
-      {action}
+    <div className={`mb-3 flex items-center gap-3 ${className}`}>
+      <div className="flex min-w-0 items-center gap-0">
+        <h2 className="section-title min-w-0">{title}</h2>
+        {infoDescription && (
+          <IconButton
+            label={infoLabel}
+            onClick={() => setInfoOpen(true)}
+            className="section-heading-info text-muted hover:text-lagoon"
+          >
+            <Info size={18} aria-hidden="true" />
+          </IconButton>
+        )}
+      </div>
+      {action && <div className="ml-auto shrink-0">{action}</div>}
+      {infoDescription && (
+        <Drawer
+          open={infoOpen}
+          title={title}
+          onClose={() => setInfoOpen(false)}
+          className="section-help-drawer"
+        >
+          <p className="pb-1 text-sm leading-relaxed text-muted">{infoDescription}</p>
+        </Drawer>
+      )}
     </div>
   )
 }
@@ -169,7 +197,7 @@ export function ListRow({
   )
 }
 
-export function BottomSheet({
+export function Drawer({
   open,
   title,
   description,
@@ -185,6 +213,7 @@ export function BottomSheet({
   className?: string
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const closeTimerRef = useRef<number | null>(null)
   const titleId = useId()
   const descriptionId = useId()
 
@@ -192,11 +221,29 @@ export function BottomSheet({
     const dialog = dialogRef.current
     if (!dialog) return
 
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+    if (open) {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
+      dialog.classList.remove('bottom-sheet-dialog--closing')
+      if (!dialog.open) dialog.showModal()
+    } else if (dialog.open) {
+      dialog.classList.add('bottom-sheet-dialog--closing')
+      closeTimerRef.current = window.setTimeout(() => {
+        if (dialog.open) dialog.close()
+        dialog.classList.remove('bottom-sheet-dialog--closing')
+        closeTimerRef.current = null
+      }, 280)
+    }
 
-  if (!open) return null
+    return () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
+    }
+  }, [open])
 
   return (
     <dialog
@@ -211,10 +258,24 @@ export function BottomSheet({
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
+      onAnimationEnd={(event) => {
+        if (
+          event.target === event.currentTarget &&
+          event.animationName === 'drawer-exit' &&
+          !open
+        ) {
+          if (dialogRef.current?.open) dialogRef.current.close()
+          dialogRef.current?.classList.remove('bottom-sheet-dialog--closing')
+          if (closeTimerRef.current !== null) {
+            window.clearTimeout(closeTimerRef.current)
+            closeTimerRef.current = null
+          }
+        }
+      }}
     >
       <section className={`bottom-sheet ${className}`}>
         <div className="bottom-sheet-handle" aria-hidden="true" />
-        <header className="mb-5 flex items-start justify-between gap-3">
+        <header className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 id={titleId} className="text-xl font-bold tracking-tight">
               {title}
@@ -234,3 +295,6 @@ export function BottomSheet({
     </dialog>
   )
 }
+
+// Keep the original API available to callers while migrating sheets gradually.
+export const BottomSheet = Drawer

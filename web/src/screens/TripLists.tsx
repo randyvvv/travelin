@@ -1,5 +1,6 @@
 import { TripList } from '../components/TripList'
-import { ActionLink, PageHeading } from '../components/ui'
+import { CreateTripAction } from '../components/CreateTripAction'
+import { PageHeading } from '../components/ui'
 import { useTrips } from '../lib/hooks/useTrips'
 
 export function PlannedTrips() {
@@ -13,9 +14,7 @@ export function PlannedTrips() {
           title="Planned trips"
           description="Trips still in progress or ready for your itinerary."
         />
-        <ActionLink to="/trips/new" className="mt-4 w-full">
-          Create a trip
-        </ActionLink>
+        <CreateTripAction className="mt-4" />
       </div>
       <TripList
         title="Trips"

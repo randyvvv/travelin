@@ -4,6 +4,7 @@ import { useSquad, useTrip } from '../../app/trip-context'
 import { Avatar } from '../../components/Avatar'
 import {
   ActionButton,
+  FeaturedHighlight,
   ListRow,
   PageHeading,
   SectionHeading,
@@ -66,7 +67,12 @@ export function TripHub() {
           <TripSection title="Inputs" sections={inputs} />
         </>
       ) : (
-        <TripSection title="Plan your trip" sections={inputs} />
+        <TripSection
+          title="Plan your trip"
+          sections={inputs}
+          highlightReels={trip.status === 'gathering'}
+          infoDescription="Use Places & vote to add places and decide where to go, add preferences to guide the itinerary, and optionally save Reels. Your squad can contribute until voting starts."
+        />
       )}
 
       <section>
@@ -99,26 +105,51 @@ export function TripHub() {
 function TripSection({
   title,
   sections,
+  infoDescription,
+  highlightReels = false,
 }: {
   title: string
   sections: { to: string; label: string; hint: string }[]
+  infoDescription?: string
+  highlightReels?: boolean
 }) {
   return (
     <section>
-      <SectionHeading title={title} />
+      <SectionHeading
+        title={title}
+        infoDescription={infoDescription}
+        infoLabel={`About ${title}`}
+      />
       <ul className="list-surface divide-y divide-line overflow-hidden">
-        {sections.map((section) => (
-          <li key={section.to}>
+        {sections.map((section) => {
+          const isReels = section.to === 'reels'
+          const row = (
             <ListRow
               to={section.to}
               title={section.label}
               subtitle={section.hint}
+              className={isReels && highlightReels ? 'trip-reels-highlight__row' : ''}
               trailing={
                 <ChevronRight size={19} className="shrink-0 text-muted" aria-hidden="true" />
               }
             />
-          </li>
-        ))}
+          )
+
+          return (
+            <li key={section.to} className={isReels ? 'trip-reels-item' : undefined}>
+              {isReels && highlightReels ? (
+                <FeaturedHighlight className="trip-reels-highlight">{row}</FeaturedHighlight>
+              ) : (
+                row
+              )}
+              {isReels && (
+                <span className="trip-reels-featured rounded-full bg-sunset/20 px-2 py-0.5 text-[0.65rem] leading-4 font-bold text-ink">
+                  Featured
+                </span>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )
