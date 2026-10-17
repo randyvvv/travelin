@@ -14,7 +14,137 @@
 }
 
 @layer base {
+  :root {
+    --bottom-nav-height: 4.5rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-paper font-sans text-ink antialiased;
+    min-width: 320px;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .page-title {
+    color: var(--color-ink);
+    font-size: clamp(1.625rem, 7vw, 1.875rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .page-title--compact {
+    font-size: 1.25rem;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+  }
+
+  .page-description {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .section-title {
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.4;
+  }
+
+  .surface-card {
+    border: 1px solid var(--color-line);
+    border-radius: 1.25rem;
+    background: var(--color-card);
+    box-shadow: 0 5px 18px rgb(27 27 31 / 4%);
+  }
+
+  .list-surface {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 1.25rem;
+    background: var(--color-card);
+    box-shadow: 0 5px 18px rgb(27 27 31 / 4%);
+  }
+
+  .list-row {
+    display: flex;
+    min-height: 4.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    transition: background-color 150ms ease;
+  }
+
+  .list-row:hover {
+    background: var(--color-paper);
+  }
+}
+
+.bottom-sheet-dialog {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, 28rem);
+  max-width: none;
+  max-height: min(85dvh, 48rem);
+  margin: 0 auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.bottom-sheet-dialog::backdrop {
+  background: rgb(27 27 31 / 42%);
+  backdrop-filter: blur(2px);
+}
+
+.bottom-sheet {
+  max-height: min(85dvh, 48rem);
+  overflow-y: auto;
+  padding: 0 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+  border: 1px solid var(--color-line);
+  border-bottom: 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: var(--color-card);
+  box-shadow: 0 -10px 35px rgb(27 27 31 / 12%);
+}
+
+.bottom-sheet-handle {
+  width: 2rem;
+  height: 0.25rem;
+  margin: 0.75rem auto 1.25rem;
+  border-radius: 999px;
+  background: var(--color-line);
+}
+
+@media (min-width: 448px) {
+  .bottom-sheet-dialog {
+    bottom: max(env(safe-area-inset-bottom), 0.75rem);
+    border-radius: 1.5rem;
+  }
+
+  .bottom-sheet {
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+    border-radius: 1.5rem;
   }
 }

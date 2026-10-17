@@ -1,6 +1,6 @@
-import { Link } from 'react-router'
 import { ErrorText } from './ErrorText'
-import { ChevronRightIcon } from './icons'
+import { ChevronRight } from 'lucide-react'
+import { ListRow, SectionHeading, StatusBadge } from './ui'
 import { formatDateRange } from '../lib/format'
 import { paymentLabel, tripStatusLabel } from '../lib/status'
 import type { Trip, WithId } from '../lib/types'
@@ -20,35 +20,36 @@ export function TripList({
   error?: string | null
   empty?: string
 }) {
+  const tripStatus = (trip: WithId<Trip>) =>
+    (uid && trip.paymentStatus?.[uid] && paymentLabel[trip.paymentStatus[uid]]) ||
+    tripStatusLabel[trip.status]
+
   return (
     <section>
-      <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">{title}</h2>
+      <SectionHeading title={title} />
       {loading ? (
-        <div className="h-20 animate-pulse rounded-2xl bg-line/60" />
+        <div className="h-20 animate-pulse rounded-2xl bg-line/60" aria-hidden="true" />
       ) : error ? (
         <ErrorText>{error}</ErrorText>
       ) : trips.length === 0 ? (
         <p className="text-muted">{empty ?? 'No trips here yet.'}</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="list-surface divide-y divide-line">
           {trips.map((trip) => (
             <li key={trip.id}>
-              <Link
+              <ListRow
                 to={`/trips/${trip.id}`}
-                className="flex items-center gap-3 rounded-2xl border border-line bg-card p-4 transition hover:border-lagoon"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold">{trip.name}</p>
-                  <p className="truncate text-sm text-muted">
-                    {trip.destination.name} · {formatDateRange(trip.startDate, trip.endDate)}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-paper px-2.5 py-1 text-xs font-semibold">
-                  {(uid && trip.paymentStatus?.[uid] && paymentLabel[trip.paymentStatus[uid]]) ||
-                    tripStatusLabel[trip.status]}
-                </span>
-                <ChevronRightIcon className="shrink-0 text-muted" />
-              </Link>
+                title={trip.name}
+                subtitle={`${trip.destination.name} · ${formatDateRange(trip.startDate, trip.endDate)}`}
+                trailing={
+                  <span className="flex shrink-0 items-center gap-2">
+                    <StatusBadge tone={trip.status === 'settled' ? 'success' : 'neutral'}>
+                      {tripStatus(trip)}
+                    </StatusBadge>
+                    <ChevronRight size={19} className="text-muted" aria-hidden="true" />
+                  </span>
+                }
+              />
             </li>
           ))}
         </ul>

@@ -1,6 +1,8 @@
 import { FirebaseError } from 'firebase/app'
+import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
+import { ActionButton } from '../components/ui'
 import { useAuth } from '../app/auth-context'
 
 /** Only same-origin paths; anything else falls back to Home. */
@@ -48,14 +50,16 @@ export function Login() {
       </div>
 
       <div>
-        <button
+        <ActionButton
           type="button"
           onClick={handleSignIn}
           disabled={busy}
-          className="h-12 w-full rounded-full bg-ink font-semibold text-paper transition hover:bg-ink/90 disabled:opacity-60"
+          variant="dark"
+          className="w-full"
         >
           {busy ? 'Signing in…' : 'Continue with Google'}
-        </button>
+          <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
+        </ActionButton>
         {error && (
           <p role="alert" className="mt-3 text-center text-sm text-red-700">
             {error}

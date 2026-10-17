@@ -23,7 +23,7 @@ export function NextStep() {
       return trip.pipeline ? (
         <PipelineProgress pipeline={trip.pipeline} />
       ) : (
-        <section role="status" className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section role="status" className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Starting Reel processing</h2>
           <div className="h-2 animate-pulse rounded-full bg-lagoon/40" />
         </section>
@@ -31,7 +31,7 @@ export function NextStep() {
     case 'voting': {
       const voted = members.filter((member) => member.votesSubmittedAt != null).length
       return (
-        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Voting is open</h2>
           <p className="text-sm text-muted tabular-nums">
             {voted} of {members.length} have submitted their votes.
@@ -48,7 +48,7 @@ export function NextStep() {
     case 'planning': {
       const revising = trip.planning?.stage === 'revising'
       return (
-        <section role="status" className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section role="status" className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Planning your days</h2>
           <p className="text-sm text-muted">
             {revising
@@ -61,7 +61,7 @@ export function NextStep() {
     }
     case 'planned':
       return (
-        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Your itinerary is ready</h2>
           <p className="text-sm text-muted">
             See the plan for each day. During the trip, log who paid for what in Split bill.
@@ -81,7 +81,7 @@ export function NextStep() {
         (member) => member.splitApprovedVersion === trip.split.version,
       ).length
       return (
-        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Approve the split</h2>
           <p className="text-sm text-muted tabular-nums">
             {approved} of {members.length} have approved. Payments start once everyone agrees.
@@ -94,7 +94,7 @@ export function NextStep() {
     }
     case 'settling':
       return (
-        <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <section className="space-y-3 surface-card p-4">
           <h2 className="font-bold">Settle up</h2>
           <p className="text-sm text-muted">
             Everyone approved. Pay the people you owe and confirm what you receive.
@@ -146,7 +146,7 @@ function FindPlaces() {
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <section className="space-y-3 surface-card p-4">
       <h2 className="font-bold">Build the list, then vote</h2>
       <p className="text-sm text-muted">
         Everyone sets their preferences and adds places: search for them, ask the AI for ideas, or

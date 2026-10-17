@@ -1,9 +1,11 @@
 import { collection, doc, query } from 'firebase/firestore'
+import { Star } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { MapsSources } from '../../components/MapsSources'
 import { Splash } from '../../components/Splash'
+import { PageHeading } from '../../components/ui'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
 import { useDoc } from '../../lib/hooks/useDoc'
@@ -43,12 +45,12 @@ export function PlaceDetail() {
 
   return (
     <article className="space-y-6 py-2">
-      <header className="space-y-1">
-        <p className="text-sm font-semibold text-lagoon">
-          {categoryLabel[place.category] ?? 'Place'}
-        </p>
-        <h1 className="text-2xl font-extrabold tracking-tight text-balance">{place.name}</h1>
-        <p className="text-muted">{place.address}</p>
+      <div className="space-y-1">
+        <PageHeading
+          eyebrow={categoryLabel[place.category] ?? 'Place'}
+          title={place.name}
+          description={place.address}
+        />
         {place.suggestion && (
           <p className="text-sm">
             <span className="font-semibold">Suggested by AI:</span> {place.suggestion.reason}
@@ -57,7 +59,10 @@ export function PlaceDetail() {
         <p className="text-sm tabular-nums">
           {place.rating != null && (
             <>
-              <span className="font-semibold">★ {place.rating.toFixed(1)}</span>
+              <span className="inline-flex items-center gap-1 font-semibold">
+                <Star size={15} fill="currentColor" aria-hidden="true" />
+                {place.rating.toFixed(1)}
+              </span>
               {place.userRatingCount != null && (
                 <span className="text-muted">
                   {' '}
@@ -70,7 +75,7 @@ export function PlaceDetail() {
             <span className="text-muted"> · {priceLabel[place.priceLevel]}</span>
           )}
         </p>
-      </header>
+      </div>
 
       {place.summaryPending && (
         <p role="status" className="text-muted">
@@ -79,7 +84,7 @@ export function PlaceDetail() {
       )}
 
       {(summary.highlights.length > 0 || facts.length > 0) && (
-        <section className="rounded-2xl border border-line bg-card p-4">
+        <section className="surface-card p-4">
           <h2 className="font-bold">What visitors say</h2>
           {summary.highlights.length > 0 && (
             <ul className="mt-2 list-disc space-y-1 pl-5">

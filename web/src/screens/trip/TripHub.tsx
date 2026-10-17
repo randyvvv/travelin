@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { ChevronRight } from 'lucide-react'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { Avatar } from '../../components/Avatar'
-import { ChevronRightIcon } from '../../components/icons'
-import { buttonClass } from '../../components/styles'
+import {
+  ActionButton,
+  ListRow,
+  PageHeading,
+  SectionHeading,
+  StatusBadge,
+  SurfaceCard,
+} from '../../components/ui'
 import { formatDateRange } from '../../lib/format'
 import { tripStatusLabel } from '../../lib/status'
 import { NextStep } from './NextStep'
@@ -34,13 +40,12 @@ export function TripHub() {
   return (
     <div className="space-y-6 py-2">
       <section>
-        <h1 className="text-2xl font-extrabold tracking-tight">{trip.destination.name}</h1>
-        <p className="text-muted">
-          {formatDateRange(trip.startDate, trip.endDate)} · from {trip.origin}
-        </p>
-        <span className="mt-3 inline-block rounded-full bg-lagoon/10 px-3 py-1 text-sm font-semibold text-lagoon-dark">
-          {tripStatusLabel[trip.status]}
-        </span>
+        <PageHeading
+          eyebrow={trip.name}
+          title={trip.destination.name}
+          description={`${formatDateRange(trip.startDate, trip.endDate)} · from ${trip.origin}`}
+        />
+        <StatusBadge tone="brand">{tripStatusLabel[trip.status]}</StatusBadge>
       </section>
 
       <NextStep />
@@ -65,9 +70,7 @@ export function TripHub() {
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
-          Squad · {members.length}
-        </h2>
+        <SectionHeading title={`Squad · ${members.length}`} />
         <ul className="space-y-2">
           {members.map((member) => (
             <li key={member.id} className="flex items-center gap-3">
@@ -76,9 +79,9 @@ export function TripHub() {
                 <p className="truncate font-semibold">
                   {member.displayName}
                   {member.role === 'host' && (
-                    <span className="ml-2 rounded-full bg-sunset/20 px-2 py-0.5 text-xs font-bold text-ink">
+                    <StatusBadge tone="warm" className="ml-2 align-middle">
                       Host
-                    </span>
+                    </StatusBadge>
                   )}
                 </p>
                 <p className="text-sm text-muted">
@@ -102,17 +105,18 @@ function TripSection({
 }) {
   return (
     <section>
-      <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">{title}</h2>
-      <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+      <SectionHeading title={title} />
+      <ul className="list-surface divide-y divide-line overflow-hidden">
         {sections.map((section) => (
           <li key={section.to}>
-            <Link to={section.to} className="flex items-center gap-3 p-4 hover:bg-paper">
-              <div className="flex-1">
-                <p className="font-semibold">{section.label}</p>
-                <p className="text-sm text-muted">{section.hint}</p>
-              </div>
-              <ChevronRightIcon className="text-muted" />
-            </Link>
+            <ListRow
+              to={section.to}
+              title={section.label}
+              subtitle={section.hint}
+              trailing={
+                <ChevronRight size={19} className="shrink-0 text-muted" aria-hidden="true" />
+              }
+            />
           </li>
         ))}
       </ul>
@@ -142,20 +146,20 @@ function InviteCard({ name, inviteCode }: { name: string; inviteCode: string }) 
   }
 
   return (
-    <section className="rounded-2xl border border-line bg-card p-4">
+    <SurfaceCard className="p-4">
       <h2 className="font-bold">Invite your squad</h2>
       <p className="mt-1 text-sm text-muted">Anyone with this link can join until voting closes.</p>
       <p className="mt-3 rounded-xl bg-paper px-3 py-2 font-mono text-sm break-all select-all">
         {url}
       </p>
       <div className="mt-3 flex items-center gap-3">
-        <button type="button" onClick={share} className={buttonClass('dark')}>
+        <ActionButton type="button" onClick={share} variant="dark">
           Share invite link
-        </button>
+        </ActionButton>
         <span role="status" className="text-sm text-muted">
           {status}
         </span>
       </div>
-    </section>
+    </SurfaceCard>
   )
 }

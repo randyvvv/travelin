@@ -1,7 +1,8 @@
 import { collection, query, where } from 'firebase/firestore'
+import { ArrowLeft, Bell, CalendarDays, Clock3, House, UserRound } from 'lucide-react'
 import { useMemo } from 'react'
-import { Link, NavLink, Outlet } from 'react-router'
-import { BellIcon } from '../components/icons'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { IconLink } from '../components/ui'
 import { db } from '../lib/firebase'
 import { useCollection } from '../lib/hooks/useCollection'
 import type { AppNotification } from '../lib/types'
@@ -9,6 +10,7 @@ import { useAuth } from './auth-context'
 
 export function AppLayout() {
   const { user } = useAuth()
+  const { pathname } = useLocation()
   const unreadQuery = useMemo(
     () =>
       user
@@ -17,50 +19,80 @@ export function AppLayout() {
     [user],
   )
   const { data: unread } = useCollection<AppNotification>(unreadQuery)
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition ${
-      isActive ? 'bg-lagoon/10 text-lagoon-dark' : 'text-muted hover:bg-line/60 hover:text-ink'
+  const plannedActive =
+    pathname === '/trips' ||
+    pathname === '/trips/new' ||
+    (pathname.startsWith('/trips/') && !pathname.startsWith('/trips/history'))
+  const navLinkClass = (isActive: boolean) =>
+    `flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[0.6875rem] font-semibold transition focus-visible:outline-2 focus-visible:outline-lagoon ${
+      isActive ? 'text-lagoon-dark' : 'text-muted hover:bg-paper hover:text-ink'
     }`
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
-        <Link to="/" className="flex items-center gap-2 text-lg font-extrabold tracking-tight">
-          <img src="/logo.svg" alt="" className="size-8" />
-          Travelin
-        </Link>
-        <Link
+      <header className="flex items-center justify-between gap-3 px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
+        {pathname === '/' ? (
+          <Link
+            to="/"
+            className="flex min-h-11 items-center gap-2.5 text-lg font-bold tracking-tight"
+          >
+            <img src="/logo.svg" alt="" className="size-9" />
+            Travelin
+          </Link>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">
+            <IconLink to="/" label="Back to home" className="-ml-2">
+              <ArrowLeft size={21} strokeWidth={1.9} aria-hidden="true" />
+            </IconLink>
+            <Link
+              to="/"
+              className="flex min-h-11 items-center gap-2 text-base font-bold tracking-tight"
+            >
+              <img src="/logo.svg" alt="" className="size-8" />
+              Travelin
+            </Link>
+          </div>
+        )}
+        <IconLink
           to="/notifications"
-          aria-label={`Notifications, ${unread.length} unread`}
-          className="relative grid size-11 place-items-center rounded-full hover:bg-line/60"
+          label={`Notifications, ${unread.length} unread`}
+          className="relative"
         >
-          <BellIcon />
+          <Bell size={21} strokeWidth={1.9} aria-hidden="true" />
           {unread.length > 0 && (
-            <span className="absolute top-1 right-1 min-w-5 rounded-full bg-sunset px-1 text-center text-xs font-bold text-ink">
+            <span className="absolute top-1 right-1 min-w-5 rounded-full bg-sunset px-1 text-center text-[0.6875rem] leading-5 font-bold text-ink ring-2 ring-paper">
               {unread.length}
             </span>
           )}
-        </Link>
+        </IconLink>
       </header>
-      <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
+      <main className="flex-1 px-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)]">
         <Outlet />
       </main>
       <nav
         aria-label="Main navigation"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-2"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-20"
       >
-        <div className="pointer-events-auto mx-auto grid w-full max-w-md grid-cols-4 gap-1 rounded-t-2xl border border-b-0 border-line bg-paper/95 px-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] backdrop-blur">
-          <NavLink to="/" end className={navLinkClass}>
-            Home
+        <div className="pointer-events-auto mx-auto grid w-full max-w-md grid-cols-4 gap-1 border-t border-line bg-card/95 px-3 pt-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] shadow-[0_-6px_24px_rgba(27,27,31,0.06)] backdrop-blur">
+          <NavLink to="/" end className={({ isActive }) => navLinkClass(isActive)}>
+            <House size={22} strokeWidth={1.9} aria-hidden="true" />
+            <span>Home</span>
           </NavLink>
-          <NavLink to="/trips" end className={navLinkClass}>
-            Planned
+          <NavLink
+            to="/trips"
+            end
+            className={({ isActive }) => navLinkClass(isActive || plannedActive)}
+          >
+            <CalendarDays size={21} strokeWidth={1.9} aria-hidden="true" />
+            <span>Planned</span>
           </NavLink>
-          <NavLink to="/trips/history" end className={navLinkClass}>
-            History
+          <NavLink to="/trips/history" end className={({ isActive }) => navLinkClass(isActive)}>
+            <Clock3 size={21} strokeWidth={1.9} aria-hidden="true" />
+            <span>History</span>
           </NavLink>
-          <NavLink to="/profile" end className={navLinkClass}>
-            Profile
+          <NavLink to="/profile" end className={({ isActive }) => navLinkClass(isActive)}>
+            <UserRound size={21} strokeWidth={1.9} aria-hidden="true" />
+            <span>Profile</span>
           </NavLink>
         </div>
       </nav>

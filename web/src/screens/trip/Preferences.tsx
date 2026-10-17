@@ -6,6 +6,7 @@ import { ErrorText } from '../../components/ErrorText'
 import { Field } from '../../components/Field'
 import { Splash } from '../../components/Splash'
 import { buttonClass, chipClass, inputClass } from '../../components/styles'
+import { PageHeading } from '../../components/ui'
 import { db } from '../../lib/firebase'
 import { formatIdr } from '../../lib/format'
 import type { Preferences as Prefs } from '../../lib/types'
@@ -91,12 +92,10 @@ function PreferencesForm({
 
   return (
     <form onSubmit={save} className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">My preferences</h1>
-        <p className="mt-1 text-muted">
-          The planner balances everyone's answers and explains what each person compromised on.
-        </p>
-      </header>
+      <PageHeading
+        title="My preferences"
+        description="The planner balances everyone's answers and explains what each person compromised on."
+      />
 
       <Field
         id="pref-budget"

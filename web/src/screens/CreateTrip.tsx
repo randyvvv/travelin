@@ -1,8 +1,10 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { Plus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { ErrorText } from '../components/ErrorText'
 import { Field } from '../components/Field'
-import { buttonClass, inputClass } from '../components/styles'
+import { inputClass } from '../components/styles'
+import { ActionButton, PageHeading } from '../components/ui'
 import { api, errorMessage, type CreateTripResponse } from '../lib/api'
 
 const emptyForm = { name: '', destination: '', origin: '', startDate: '', endDate: '' }
@@ -36,7 +38,10 @@ export function CreateTrip() {
 
   return (
     <form onSubmit={submit} className="space-y-5 py-2">
-      <h1 className="text-2xl font-extrabold tracking-tight">Create a trip</h1>
+      <PageHeading
+        title="Create a trip"
+        description="Set the basics, then invite everyone to plan together."
+      />
 
       <Field id="trip-name" label="Trip name">
         <input
@@ -97,9 +102,10 @@ export function CreateTrip() {
       </div>
 
       <ErrorText>{error}</ErrorText>
-      <button type="submit" disabled={busy} className={`${buttonClass('primary')} w-full`}>
+      <ActionButton type="submit" disabled={busy} className="w-full">
+        <Plus size={18} strokeWidth={2.1} aria-hidden="true" />
         {busy ? 'Creating…' : 'Create trip'}
-      </button>
+      </ActionButton>
     </form>
   )
 }

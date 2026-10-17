@@ -40,7 +40,7 @@ export function StayCard({ stay }: { stay: NonNullable<Plan['stay']> }) {
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <section className="space-y-3 surface-card p-4">
       <div>
         <p className="text-sm font-semibold text-lagoon">
           Suggested {stay.type === 'stay' ? 'stay' : 'tour'}

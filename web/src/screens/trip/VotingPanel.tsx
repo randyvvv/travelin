@@ -27,7 +27,7 @@ export function VotingPanel() {
     .map((member) => member.displayName.split(' ')[0])
 
   return (
-    <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <section className="space-y-3 surface-card p-4">
       <div>
         <p className="font-semibold">
           {deadline

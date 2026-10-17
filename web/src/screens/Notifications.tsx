@@ -1,6 +1,8 @@
 import { collection, doc, limit, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { CheckCheck } from 'lucide-react'
+import { ActionButton, PageHeading } from '../components/ui'
 import { useAuth } from '../app/auth-context'
 import { db } from '../lib/firebase'
 import { formatRelative } from '../lib/format'
@@ -42,14 +44,20 @@ export function Notifications() {
 
   return (
     <div className="space-y-4 py-2">
-      <header className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold tracking-tight">Notifications</h1>
+      <div className="flex items-end justify-between gap-3">
+        <PageHeading title="Notifications" />
         {unread.length > 0 && (
-          <button type="button" onClick={markAllRead} className="text-sm font-semibold text-lagoon">
+          <ActionButton
+            type="button"
+            variant="tertiary"
+            onClick={markAllRead}
+            className="min-h-10 shrink-0 px-2 text-xs"
+          >
+            <CheckCheck size={16} aria-hidden="true" />
             Mark all as read
-          </button>
+          </ActionButton>
         )}
-      </header>
+      </div>
 
       {loading ? (
         <div className="h-20 animate-pulse rounded-2xl bg-line/60" />
@@ -58,13 +66,13 @@ export function Notifications() {
           Nothing yet. You'll hear here when friends join, voting closes, and bills come in.
         </p>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+        <ul className="list-surface divide-y divide-line overflow-hidden">
           {notifications.map((notification) => (
             <li key={notification.id}>
               <button
                 type="button"
                 onClick={() => open(notification)}
-                className="flex w-full items-start gap-3 p-4 text-left hover:bg-paper"
+                className="list-row w-full items-start"
               >
                 <span
                   aria-hidden

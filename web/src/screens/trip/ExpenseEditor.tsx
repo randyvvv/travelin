@@ -6,6 +6,7 @@ import { ErrorText } from '../../components/ErrorText'
 import { Field } from '../../components/Field'
 import { Splash } from '../../components/Splash'
 import { buttonClass, chipClass, inputClass } from '../../components/styles'
+import { PageHeading } from '../../components/ui'
 import { api, errorMessage, type ScannedReceipt } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { formatIdr } from '../../lib/format'
@@ -245,9 +246,7 @@ function ExpenseForm({
 
   return (
     <form onSubmit={save} className="space-y-5 py-2">
-      <h1 className="text-2xl font-extrabold tracking-tight">
-        {expenseId ? 'Edit expense' : 'Add expense'}
-      </h1>
+      <PageHeading title={expenseId ? 'Edit expense' : 'Add expense'} />
 
       {warnings.length > 0 && (
         <div className="rounded-xl border border-sunset/60 bg-sunset/10 p-3 text-sm">
@@ -381,7 +380,7 @@ function ExpenseForm({
       {state.mode === 'items' && (
         <section className="space-y-3">
           {state.items.map((item, index) => (
-            <div key={index} className="space-y-3 rounded-2xl border border-line bg-card p-3">
+            <div key={index} className="space-y-3 surface-card p-3">
               <div className="flex gap-2">
                 <label htmlFor={`item-name-${index}`} className="sr-only">
                   Item name

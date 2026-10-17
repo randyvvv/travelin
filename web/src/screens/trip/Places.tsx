@@ -1,10 +1,12 @@
 import { collection, doc, query, updateDoc } from 'firebase/firestore'
 import { useMemo, useState } from 'react'
+import { Check, Star } from 'lucide-react'
 import { Link } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { DroppedPlaces, PipelineProgress } from '../../components/Pipeline'
 import { buttonClass } from '../../components/styles'
+import { PageHeading, SectionHeading } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
@@ -27,22 +29,17 @@ export function Places() {
   if (trip.status === 'gathering' || trip.status === 'extracting') {
     return (
       <div className="space-y-5 py-2">
-        <header>
-          <h1 className="text-2xl font-extrabold tracking-tight">Places</h1>
-          <p className="mt-1 text-muted">
-            Build the list together: search for places, ask the AI for ideas, or add the Reels you
-            saved. Voting starts when the host is ready.
-          </p>
-        </header>
+        <PageHeading
+          title="Places"
+          description="Build the list together: search for places, ask the AI for ideas, or add the Reels you saved. Voting starts when the host is ready."
+        />
         {trip.status === 'extracting' && trip.pipeline ? (
           <PipelineProgress pipeline={trip.pipeline} />
         ) : (
           <CollectPlaces />
         )}
         <section>
-          <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
-            On the list · {places.length}
-          </h2>
+          <SectionHeading title={`On the list · ${places.length}`} />
           {places.length === 0 ? (
             <p className="text-muted">Nothing yet. Places you add show up here.</p>
           ) : (
@@ -59,13 +56,10 @@ export function Places() {
 
   return (
     <div className="space-y-5 pt-2 pb-40">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Places & vote</h1>
-        <p className="mt-1 text-muted">
-          Every place here is checked on Google Maps.
-          {voting && ' Vote on each one, then submit.'}
-        </p>
-      </header>
+      <PageHeading
+        title="Places & vote"
+        description={`Every place here is checked on Google Maps.${voting ? ' Vote on each one, then submit.' : ''}`}
+      />
 
       {voting && <VotingPanel />}
 
@@ -119,13 +113,14 @@ function PlaceCard({
   }
 
   return (
-    <li className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <li className="space-y-3 surface-card p-4">
       <Link to={place.id} className="block space-y-1">
         <div className="flex items-start justify-between gap-3">
           <h2 className="font-bold">{place.name}</h2>
           {place.rating != null && (
-            <span className="shrink-0 text-sm font-semibold tabular-nums">
-              ★ {place.rating.toFixed(1)}
+            <span className="flex shrink-0 items-center gap-1 text-sm font-semibold tabular-nums">
+              <Star size={15} fill="currentColor" aria-hidden="true" />
+              {place.rating.toFixed(1)}
             </span>
           )}
         </div>
@@ -205,7 +200,7 @@ function SubmitBar({
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 border-t border-line bg-paper/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+    <div className="fixed inset-x-0 bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] z-10 border-t border-line bg-card/95 px-4 pt-3 pb-3 shadow-[0_-6px_24px_rgba(27,27,31,0.06)] backdrop-blur">
       <div className="mx-auto max-w-md space-y-2">
         {submitted ? (
           <p role="status" className="text-center text-sm">
@@ -223,6 +218,7 @@ function SubmitBar({
               disabled={busy}
               className={`${buttonClass('primary')} w-full`}
             >
+              {busy ? null : <Check size={17} aria-hidden="true" />}
               {busy ? 'Submitting…' : `Submit my votes (${votedCount} of ${placeCount})`}
             </button>
             <p className="text-center text-xs text-muted">

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { UsersRound } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ErrorText } from '../components/ErrorText'
 import { Splash } from '../components/Splash'
-import { buttonClass } from '../components/styles'
+import { ActionLink, ActionButton, PageHeading } from '../components/ui'
 import { api, errorMessage, type InvitePreview } from '../lib/api'
 import { formatDateRange } from '../lib/format'
 
@@ -42,7 +43,7 @@ export function Join() {
   if (loadError) {
     return (
       <section className="py-12 text-center">
-        <h1 className="text-xl font-bold">Invite not found</h1>
+        <PageHeading title="Invite not found" />
         <p className="mt-2 text-muted">{loadError} Ask your friend to share the link again.</p>
         <Link to="/" className="mt-6 inline-block font-semibold text-lagoon">
           Back to home
@@ -54,9 +55,9 @@ export function Join() {
 
   return (
     <section className="space-y-6 py-4">
-      <div className="rounded-2xl border border-line bg-card p-5">
+      <div className="surface-card p-5">
         <p className="text-sm font-semibold text-lagoon">{preview.hostName} invited you</p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight">{preview.name}</h1>
+        <h1 className="mt-1 page-title">{preview.name}</h1>
         <p className="mt-1 text-muted">
           {preview.destination} · {formatDateRange(preview.startDate, preview.endDate)}
         </p>
@@ -67,20 +68,16 @@ export function Join() {
       </div>
 
       {preview.alreadyMember ? (
-        <Link to={`/trips/${preview.tripId}`} className={`${buttonClass('primary')} w-full`}>
+        <ActionLink to={`/trips/${preview.tripId}`} className="w-full">
           You're already in. Open the trip
-        </Link>
+        </ActionLink>
       ) : preview.joinable ? (
         <>
           <ErrorText>{joinError}</ErrorText>
-          <button
-            type="button"
-            onClick={join}
-            disabled={joining}
-            className={`${buttonClass('primary')} w-full`}
-          >
+          <ActionButton type="button" onClick={join} disabled={joining} className="w-full">
+            <UsersRound size={18} aria-hidden="true" />
             {joining ? 'Joining…' : 'Join the squad'}
-          </button>
+          </ActionButton>
         </>
       ) : (
         <p className="text-center text-muted">

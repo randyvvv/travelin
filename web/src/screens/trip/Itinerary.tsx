@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { DayMap, type MapPoint } from '../../components/DayMap'
 import { Splash } from '../../components/Splash'
+import { PageHeading } from '../../components/ui'
 import { db } from '../../lib/firebase'
 import { formatDay, formatIdr } from '../../lib/format'
 import { useCollection } from '../../lib/hooks/useCollection'
@@ -19,12 +20,16 @@ export function Itinerary() {
   if (!PLANNED.has(trip.status)) {
     return (
       <div className="space-y-2 py-2">
-        <h1 className="text-2xl font-extrabold tracking-tight">Itinerary</h1>
-        <p className="text-muted">
-          {trip.status === 'planning'
-            ? 'The planner is working on it. This page fills in as soon as it is done.'
-            : 'The itinerary is planned once everyone has voted on places.'}
-        </p>
+        <PageHeading
+          title="Itinerary"
+          description={
+            <>
+              {trip.status === 'planning'
+                ? 'The planner is working on it. This page fills in as soon as it is done.'
+                : 'The itinerary is planned once everyone has voted on places.'}
+            </>
+          }
+        />
       </div>
     )
   }
@@ -59,15 +64,17 @@ function PlannedItinerary({ tripId }: { tripId: string }) {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Itinerary</h1>
-        {myEstimate && (
-          <p className="mt-1 text-muted tabular-nums">
-            Your estimated spend: {formatIdr(myEstimate.amountIdr)}
-            {me?.prefs.budgetIdr ? ` of your ${formatIdr(me.prefs.budgetIdr)} budget` : ''}
-          </p>
-        )}
-      </header>
+      <PageHeading
+        title="Itinerary"
+        description={
+          myEstimate ? (
+            <span className="tabular-nums">
+              Your estimated spend: {formatIdr(myEstimate.amountIdr)}
+              {me?.prefs.budgetIdr ? ` of your ${formatIdr(me.prefs.budgetIdr)} budget` : ''}
+            </span>
+          ) : undefined
+        }
+      />
 
       <div role="tablist" aria-label="Trip days" className="flex gap-2 overflow-x-auto pb-1">
         {days.map((item, index) => (
@@ -133,7 +140,7 @@ function StopItem({
         : `Without ${listNames(missing.map((member) => firstName(member.id)))}`
 
   return (
-    <li className="flex gap-3 rounded-2xl border border-line bg-card p-4">
+    <li className="flex gap-3 surface-card p-4">
       <span
         aria-hidden
         className="grid size-7 shrink-0 place-items-center rounded-full bg-lagoon text-sm font-bold text-white"

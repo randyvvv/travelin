@@ -4,16 +4,17 @@ import { Link } from 'react-router'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { buttonClass } from '../../components/styles'
+import { PageHeading, SectionHeading, StatusBadge } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { formatIdr } from '../../lib/format'
 import { useCollection } from '../../lib/hooks/useCollection'
 import type { Transfer, TransferStatus, WithId } from '../../lib/types'
 
-const statusChip: Record<TransferStatus, { label: string; className: string }> = {
-  unpaid: { label: 'Unpaid', className: 'bg-red-100 text-red-800' },
-  waiting: { label: 'Waiting', className: 'bg-sunset/25 text-ink' },
-  confirmed: { label: 'Confirmed', className: 'bg-lagoon/15 text-lagoon-dark' },
+const statusChip: Record<TransferStatus, { label: string; tone: 'danger' | 'warm' | 'success' }> = {
+  unpaid: { label: 'Unpaid', tone: 'danger' },
+  waiting: { label: 'Waiting', tone: 'warm' },
+  confirmed: { label: 'Confirmed', tone: 'success' },
 }
 
 export function Pay() {
@@ -28,13 +29,17 @@ export function Pay() {
   if (trip.status !== 'settling' && trip.status !== 'settled') {
     return (
       <div className="space-y-2 py-2">
-        <h1 className="text-2xl font-extrabold tracking-tight">Payments</h1>
-        <p className="text-muted">
-          Payments start once everyone approves the split.{' '}
-          <Link to="../split" relative="path" className="font-semibold text-lagoon">
-            Go to Split bill
-          </Link>
-        </p>
+        <PageHeading
+          title="Payments"
+          description={
+            <>
+              Payments start once everyone approves the split.{' '}
+              <Link to="../split" relative="path" className="font-semibold text-lagoon">
+                Go to Split bill
+              </Link>
+            </>
+          }
+        />
       </div>
     )
   }
@@ -45,13 +50,10 @@ export function Pay() {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Payments</h1>
-        <p className="mt-1 text-muted">
-          Travelin never moves money. Each person sends their own transfer by bank or e-wallet, and
-          the person receiving it confirms.
-        </p>
-      </header>
+      <PageHeading
+        title="Payments"
+        description="Travelin never moves money. Each person sends their own transfer by bank or e-wallet, and the person receiving it confirms."
+      />
 
       {trip.status === 'settled' && (
         <p className="rounded-2xl bg-lagoon/10 p-4 font-semibold text-lagoon-dark">
@@ -83,7 +85,7 @@ function TransferList({
 }) {
   return (
     <section>
-      <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">{title}</h2>
+      <SectionHeading title={title} />
       {transfers.length === 0 ? (
         <p className="text-muted">{empty}</p>
       ) : (
@@ -135,7 +137,7 @@ function TransferCard({ transfer }: { transfer: WithId<Transfer> }) {
   }
 
   return (
-    <li className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <li className="space-y-3 surface-card p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="font-semibold">
           {isPayer
@@ -144,9 +146,7 @@ function TransferCard({ transfer }: { transfer: WithId<Transfer> }) {
               ? `From ${name(transfer.from)}`
               : `${name(transfer.from)} → ${name(transfer.to)}`}
         </p>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${chip.className}`}>
-          {chip.label}
-        </span>
+        <StatusBadge tone={chip.tone}>{chip.label}</StatusBadge>
       </div>
       <p className="text-2xl font-extrabold tabular-nums">{amount}</p>
       {guidance && <p className="text-sm text-muted">{guidance}</p>}

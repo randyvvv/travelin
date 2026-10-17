@@ -1,6 +1,5 @@
-import { Link } from 'react-router'
 import { TripList } from '../components/TripList'
-import { buttonClass } from '../components/styles'
+import { ActionLink, PageHeading } from '../components/ui'
 import { useTrips } from '../lib/hooks/useTrips'
 
 export function PlannedTrips() {
@@ -9,13 +8,15 @@ export function PlannedTrips() {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Planned trips</h1>
-        <p className="mt-1 text-muted">Trips still in progress or ready for your itinerary.</p>
-        <Link to="/trips/new" className={`${buttonClass('primary')} mt-4 w-full`}>
+      <div>
+        <PageHeading
+          title="Planned trips"
+          description="Trips still in progress or ready for your itinerary."
+        />
+        <ActionLink to="/trips/new" className="mt-4 w-full">
           Create a trip
-        </Link>
-      </header>
+        </ActionLink>
+      </div>
       <TripList
         title="Trips"
         trips={unfinished}
@@ -34,10 +35,9 @@ export function TripHistory() {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Trip history</h1>
-        <p className="mt-1 text-muted">Trips where everyone has settled up.</p>
-      </header>
+      <div>
+        <PageHeading title="Trip history" description="Trips where everyone has settled up." />
+      </div>
       <TripList
         title="History"
         trips={settled}

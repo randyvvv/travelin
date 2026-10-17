@@ -68,7 +68,7 @@ function SearchPlaces() {
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <section className="space-y-3 surface-card p-4">
       <h2 className="font-bold">Search for a place</h2>
       <form onSubmit={search} className="flex gap-2">
         <label htmlFor="place-search" className="sr-only">
@@ -141,7 +141,7 @@ function SuggestPlaces() {
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <section className="space-y-3 surface-card p-4">
       <h2 className="font-bold">Not sure where to start?</h2>
       <p className="text-sm text-muted">
         The AI picks places in {trip.destination.name} that fit the squad's interests and food

@@ -5,6 +5,7 @@ import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { Splash } from '../../components/Splash'
 import { buttonClass } from '../../components/styles'
+import { PageHeading, StatusBadge } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { db } from '../../lib/firebase'
 import { formatDateTime, formatIdr } from '../../lib/format'
@@ -12,11 +13,14 @@ import { useDoc } from '../../lib/hooks/useDoc'
 import { listNames } from '../../lib/places'
 import type { Booking as BookingDoc } from '../../lib/types'
 
-const statusChip: Record<BookingDoc['status'], { label: string; className: string }> = {
-  approving: { label: 'Waiting for approvals', className: 'bg-sunset/25 text-ink' },
-  paying: { label: 'Paying', className: 'bg-sunset/25 text-ink' },
-  paid: { label: 'Booked', className: 'bg-lagoon/15 text-lagoon-dark' },
-  failed: { label: "Didn't go through", className: 'bg-red-100 text-red-800' },
+const statusChip: Record<
+  BookingDoc['status'],
+  { label: string; tone: 'warm' | 'success' | 'danger' }
+> = {
+  approving: { label: 'Waiting for approvals', tone: 'warm' },
+  paying: { label: 'Paying', tone: 'warm' },
+  paid: { label: 'Booked', tone: 'success' },
+  failed: { label: "Didn't go through", tone: 'danger' },
 }
 
 export function Booking() {
@@ -58,17 +62,12 @@ export function Booking() {
 
   return (
     <div className="space-y-5 py-2">
-      <header className="space-y-1">
-        <p className="text-sm font-semibold text-lagoon">Group booking</p>
-        <h1 className="text-2xl font-extrabold tracking-tight text-balance">{booking.title}</h1>
-        <span
-          className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${chip.className}`}
-        >
-          {chip.label}
-        </span>
-      </header>
+      <div className="space-y-1">
+        <PageHeading eyebrow="Group booking" title={booking.title} />
+        <StatusBadge tone={chip.tone}>{chip.label}</StatusBadge>
+      </div>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="surface-card p-4">
         <ul className="space-y-1 text-sm">
           {cart.payment_request.details.display_items.map((item) => (
             <li key={item.label} className="flex justify-between gap-3">

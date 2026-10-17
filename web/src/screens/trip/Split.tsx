@@ -1,11 +1,19 @@
 import { collection, orderBy, query } from 'firebase/firestore'
 import { ref, uploadBytes } from 'firebase/storage'
+import { Plus, ScanLine } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../../app/auth-context'
 import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { buttonClass } from '../../components/styles'
+import {
+  ActionButton,
+  BottomSheet,
+  PageHeading,
+  SectionHeading,
+  SurfaceCard,
+} from '../../components/ui'
 import {
   api,
   errorMessage,
@@ -28,8 +36,10 @@ export function Split() {
   if (!SPLIT_STAGES.has(trip.status)) {
     return (
       <div className="space-y-2 py-2">
-        <h1 className="text-2xl font-extrabold tracking-tight">Split bill</h1>
-        <p className="text-muted">Split Bill opens once the itinerary is ready.</p>
+        <PageHeading
+          title="Split bill"
+          description="Split bill opens once the itinerary is ready."
+        />
       </div>
     )
   }
@@ -70,16 +80,13 @@ function SplitBoard() {
 
   return (
     <div className="space-y-5 pt-2 pb-48">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Split bill</h1>
-        <p className="mt-1 text-muted">
-          Log what each person paid. Travelin works out the fewest transfers that settle everyone
-          up.
-        </p>
-      </header>
+      <PageHeading
+        title="Split bill"
+        description="Log what each person paid. Travelin works out the fewest transfers that settle everyone up."
+      />
 
       {preview && myBalance !== null && trip.status !== 'settled' && (
-        <section className="rounded-2xl bg-lagoon/10 p-4">
+        <SurfaceCard className="border-transparent bg-lagoon/10 p-4 shadow-none">
           <p className="text-lg font-bold tabular-nums">
             {myBalance > 0
               ? `You get back ${formatIdr(myBalance)}`
@@ -97,12 +104,13 @@ function SplitBoard() {
               ))}
             </ul>
           )}
-        </section>
+        </SurfaceCard>
       )}
 
       {editable && (
         <div className="grid grid-cols-2 gap-3">
-          <Link to="new" className={buttonClass('dark')}>
+          <Link to="new" className={`${buttonClass('dark')} w-full`}>
+            <Plus size={18} aria-hidden="true" />
             Add expense
           </Link>
           <ScanReceipt />
@@ -110,9 +118,7 @@ function SplitBoard() {
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
-          Expenses · {expenses.length}
-        </h2>
+        <SectionHeading title={`Expenses · ${expenses.length}`} />
         {loading ? (
           <div className="h-20 animate-pulse rounded-2xl bg-line/60" />
         ) : expenses.length === 0 ? (
@@ -151,7 +157,7 @@ function ExpenseRow({ expense, editable }: { expense: WithId<Expense>; editable:
       <p className="shrink-0 font-semibold tabular-nums">{formatIdr(expense.amountIdr)}</p>
     </>
   )
-  const className = 'flex items-center gap-3 rounded-2xl border border-line bg-card p-4'
+  const className = 'flex items-center gap-3 surface-card p-4'
   return (
     <li>
       {editable && expense.source !== 'booking' ? (
@@ -202,6 +208,7 @@ function ScanReceipt() {
         aria-disabled={busy}
         className={`${buttonClass('outline')} w-full cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}
       >
+        <ScanLine size={18} aria-hidden="true" />
         {stage === 'uploading' ? 'Uploading…' : stage === 'reading' ? 'Reading…' : 'Scan receipt'}
       </label>
       <input
@@ -243,29 +250,32 @@ function SettleBar({ expenseCount }: { expenseCount: number }) {
     }
   }
 
-  const adjust = confirmingAdjust ? (
-    <div className="flex items-center justify-center gap-4 text-sm">
-      <span>Everyone will need to approve again.</span>
-      <button
+  const adjust = (
+    <>
+      <ActionButton
         type="button"
-        onClick={() => call('split:adjust')}
-        disabled={busy}
-        className="font-semibold text-lagoon"
+        variant="tertiary"
+        onClick={() => setConfirmingAdjust(true)}
+        className="min-h-10 w-full"
       >
-        Adjust
-      </button>
-      <button type="button" onClick={() => setConfirmingAdjust(false)} className="text-muted">
-        Cancel
-      </button>
-    </div>
-  ) : (
-    <button
-      type="button"
-      onClick={() => setConfirmingAdjust(true)}
-      className="w-full text-sm font-semibold text-lagoon"
-    >
-      Adjust split
-    </button>
+        Adjust split
+      </ActionButton>
+      <BottomSheet
+        open={confirmingAdjust}
+        title="Adjust this split?"
+        description="Everyone will need to approve the updated split again."
+        onClose={() => setConfirmingAdjust(false)}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <ActionButton type="button" variant="outline" onClick={() => setConfirmingAdjust(false)}>
+            Cancel
+          </ActionButton>
+          <ActionButton type="button" onClick={() => call('split:adjust')} disabled={busy}>
+            {busy ? 'Adjusting…' : 'Adjust split'}
+          </ActionButton>
+        </div>
+      </BottomSheet>
+    </>
   )
 
   let body
@@ -319,7 +329,7 @@ function SettleBar({ expenseCount }: { expenseCount: number }) {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 border-t border-line bg-paper/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+    <div className="fixed inset-x-0 bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] z-10 border-t border-line bg-card/95 px-4 pt-3 pb-3 shadow-[0_-6px_24px_rgba(27,27,31,0.06)] backdrop-blur">
       <div className="mx-auto max-w-md space-y-2">
         <ErrorText>{error}</ErrorText>
         {body}

@@ -12,7 +12,7 @@ const stageLabel: Record<string, string> = {
 export function PipelineProgress({ pipeline }: { pipeline: PipelineState }) {
   const fraction = pipeline.total > 0 ? pipeline.done / pipeline.total : 0
   return (
-    <div role="status" className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <div role="status" className="space-y-3 surface-card p-4">
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-semibold">{stageLabel[pipeline.stage] ?? 'Working…'}</p>
         {pipeline.total > 0 && (

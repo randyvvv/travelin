@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../app/auth-context'
 import { Avatar } from '../components/Avatar'
 import { ErrorText } from '../components/ErrorText'
-import { buttonClass } from '../components/styles'
+import { ActionButton, PageHeading, SurfaceCard } from '../components/ui'
 
 export function Profile() {
   const { user, signOut } = useAuth()
@@ -23,28 +23,27 @@ export function Profile() {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Profile</h1>
-      </header>
+      <PageHeading title="Profile" />
 
-      <section className="flex items-center gap-3 rounded-2xl border border-line bg-card p-4">
+      <SurfaceCard className="flex items-center gap-3 p-4">
         <Avatar name={user?.displayName ?? 'Traveler'} photoURL={user?.photoURL ?? undefined} />
         <div className="min-w-0">
           <p className="truncate font-semibold">{user?.displayName || 'Traveler'}</p>
           {user?.email && <p className="truncate text-sm text-muted">{user.email}</p>}
         </div>
-      </section>
+      </SurfaceCard>
 
       <section className="space-y-3">
         <ErrorText>{error}</ErrorText>
-        <button
+        <ActionButton
           type="button"
           onClick={logout}
           disabled={busy}
-          className={`${buttonClass('outline')} w-full`}
+          variant="outline"
+          className="w-full"
         >
           {busy ? 'Signing out…' : 'Sign out'}
-        </button>
+        </ActionButton>
       </section>
     </div>
   )

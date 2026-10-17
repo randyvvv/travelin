@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
+import { Plus } from 'lucide-react'
 import { useAuth } from '../app/auth-context'
 import { TripList } from '../components/TripList'
-import { buttonClass } from '../components/styles'
+import { ActionLink, PageHeading } from '../components/ui'
 import { useTrips } from '../lib/hooks/useTrips'
 
 export function Home() {
@@ -13,11 +14,14 @@ export function Home() {
   return (
     <div className="space-y-8 py-2">
       <section>
-        <p className="text-muted">Hi {user?.displayName?.split(' ')[0] ?? 'there'},</p>
-        <h1 className="text-2xl font-extrabold tracking-tight">Where's the squad going next?</h1>
-        <Link to="/trips/new" className={`${buttonClass('primary')} mt-5 w-full`}>
+        <PageHeading
+          eyebrow={`Hi ${user?.displayName?.split(' ')[0] ?? 'there'}`}
+          title="Where's the squad going next?"
+        />
+        <ActionLink to="/trips/new" className="mt-5 w-full">
+          <Plus size={19} strokeWidth={2.1} aria-hidden="true" />
           Create a trip
-        </Link>
+        </ActionLink>
       </section>
 
       <TripList

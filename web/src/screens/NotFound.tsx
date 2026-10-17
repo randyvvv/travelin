@@ -1,13 +1,13 @@
-import { Link } from 'react-router'
+import { ActionLink, PageHeading } from '../components/ui'
 
 export function NotFound() {
   return (
     <main className="mx-auto grid min-h-dvh max-w-md place-items-center px-6 text-center">
       <div>
-        <h1 className="text-2xl font-extrabold">Page not found</h1>
-        <Link to="/" className="mt-4 inline-block font-semibold text-lagoon">
+        <PageHeading title="Page not found" />
+        <ActionLink to="/" className="mt-4 w-full">
           Back to home
-        </Link>
+        </ActionLink>
       </div>
     </main>
   )

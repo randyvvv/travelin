@@ -14,6 +14,7 @@ import { useSquad, useTrip } from '../../app/trip-context'
 import { ErrorText } from '../../components/ErrorText'
 import { Field } from '../../components/Field'
 import { buttonClass, inputClass } from '../../components/styles'
+import { PageHeading, SectionHeading, StatusBadge } from '../../components/ui'
 import { db, storage } from '../../lib/firebase'
 import { useCollection } from '../../lib/hooks/useCollection'
 import type { Reel, WithId } from '../../lib/types'
@@ -62,13 +63,10 @@ export function Reels() {
 
   return (
     <div className="space-y-6 py-2">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight">Reels</h1>
-        <p className="mt-1 text-muted">
-          Optional. Add the travel Reels your squad keeps sharing, and the AI watches each video for
-          places. You can also search for places or ask for AI suggestions on the Places page.
-        </p>
-      </header>
+      <PageHeading
+        title="Reels"
+        description="Optional. Add the travel Reels your squad keeps sharing, and the AI watches each video for places. You can also search for places or ask for AI suggestions on the Places page."
+      />
 
       {trip.status === 'gathering' ? (
         <>
@@ -82,9 +80,7 @@ export function Reels() {
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-bold tracking-wide text-muted uppercase">
-          Added · {reels.length}
-        </h2>
+        <SectionHeading title={`Added · ${reels.length}`} />
         {loading ? (
           <div className="h-20 animate-pulse rounded-2xl bg-line/60" />
         ) : reels.length === 0 ? (
@@ -154,7 +150,7 @@ function UploadReel({ tripId }: { tripId: string }) {
 
   const uploading = progress !== null
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-line bg-card p-4">
+    <form onSubmit={submit} className="space-y-4 surface-card p-4">
       <h2 className="font-bold">Upload a video</h2>
       <Field id="reel-file" label="Video file" hint="MP4 or MOV, up to 100 MB.">
         <input
@@ -242,7 +238,7 @@ function LinkReel({ tripId }: { tripId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <form onSubmit={submit} className="space-y-3 surface-card p-4">
       <h2 className="font-bold">Only have a link?</h2>
       <p className="text-sm text-muted">
         YouTube links are read by the AI. Instagram and TikTok links are saved for reference; upload
@@ -295,7 +291,7 @@ function ReelCard({ reel }: { reel: WithId<Reel> }) {
       : statusLabel[reel.status]
 
   return (
-    <li className="space-y-3 rounded-2xl border border-line bg-card p-4">
+    <li className="space-y-3 surface-card p-4">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">{title}</p>
@@ -303,17 +299,14 @@ function ReelCard({ reel }: { reel: WithId<Reel> }) {
             {platformLabel[reel.platform]} · added by {uploader}
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
-            reel.status === 'failed'
-              ? 'bg-red-100 text-red-800'
-              : reel.status === 'done'
-                ? 'bg-lagoon/10 text-lagoon-dark'
-                : 'bg-paper text-ink'
-          }`}
+        <StatusBadge
+          tone={
+            reel.status === 'failed' ? 'danger' : reel.status === 'done' ? 'success' : 'neutral'
+          }
+          className="shrink-0"
         >
           {statusText}
-        </span>
+        </StatusBadge>
       </div>
       {videoUrl && (
         <video src={videoUrl} controls playsInline className="max-h-96 w-full rounded-xl bg-ink" />
